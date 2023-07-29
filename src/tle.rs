@@ -191,3 +191,19 @@ fn check_if_leap_year(year: i32) -> bool {
     let is_leap_year: bool = rule1 && (rule2 || rule3);
     return is_leap_year
 }
+
+
+#[cfg(test)]
+mod tle_tests {
+    use super::*;
+
+    #[test]
+    fn test_calc_month_day(){
+        let year: u32 = 2023;
+        let day_of_year: u32 = 78;
+        let md = calc_month_day(day_of_year, year);
+        assert_eq!(md[0], 3);
+        assert_eq!(md[1], 3);
+
+    }
+}
