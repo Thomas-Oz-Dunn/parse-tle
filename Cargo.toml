@@ -2,7 +2,18 @@
 name = "parse-tle"
 version = "0.1.0"
 edition = "2021"
+description = "Parse two line element"
+license = "MIT"
+keywords = ["astrodynamics", "astronomy", "satellites"]
+repository = "https://github.com/Thomas-Oz-Dunn/parse-tle"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+nalgebra = "0.31.4"
+chrono = "0.4.23"
+
+[package]
+
+[lib]
+name = "parse-tle"
