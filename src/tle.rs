@@ -1,4 +1,25 @@
-use chrono::{DateTime, NaiveDateTime, NaiveDate, NaiveTime, Datelike, Timelike, Utc};
+/*
+Parser for TLE
+*/
+
+use chrono::{
+    DateTime, NaiveDateTime, NaiveDate, NaiveTime, Datelike, Timelike, Utc};
+
+
+pub struct TLE {
+    name: &str,
+    year: u32,
+    month: u32,
+    day: u32,
+    hours: u32,  
+    sec: u32,
+    inc: f64,
+    raan: f64,
+    eccentricity:  f64,
+    mean_motion: f64,
+    arg_perigee: f64,
+    mean_anomaly: f64    
+}
 
 /// Parse standard Two Line Element
 /// 
@@ -24,10 +45,10 @@ pub fn from_tle(
     let epoch_str: &str = line1[3];
     let epoch_year: i32 = epoch_str[..=1]
         .to_string()
-        .parse::<i32>()
+        .parse::<u32>()
         .unwrap();
 
-    let year: i32;
+    let year: u32;
     if epoch_year < 57{
         year = 2000 + epoch_year;
     } else {
@@ -66,15 +87,13 @@ pub fn from_tle(
     let date: NaiveDate = NaiveDate::from_ymd_opt(year, month, day).unwrap();
     let time: NaiveTime = NaiveTime::from_hms_opt(hour, min, sec).unwrap();
 
-    let dt: NaiveDateTime = NaiveDateTime::new(date, time);
-    let date_time: DateTime::<Utc> = DateTime::<Utc>::from_utc(dt, Utc); 
-
     // let mean_motion_prime: &str = line1[4];
     // let mean_motion_2: &str = line1[5];
     
     let binding: String = lines[2].to_string();
     let line2: Vec<&str> = binding.split_whitespace().collect();
     
+    // Angles
     let inc: f64 = line2[2]
         .to_string()
         .parse::<f64>()
@@ -85,7 +104,7 @@ pub fn from_tle(
         .parse::<f64>()
         .unwrap();
 
-    let ecc: f64 =
+    let eccentricity: f64 =
         (".".to_owned() + line2[4])
         .parse::<f64>()
         .unwrap();
@@ -105,7 +124,6 @@ pub fn from_tle(
         .to_string()
         .parse::<f64>()
         .unwrap();
-
 
 }
 
@@ -161,9 +179,15 @@ pub fn calc_month_day(
 /// ------
 /// year: `i32`
 ///     Gregorian Year of common era.
+/// 
+/// Outputs
+/// -------
+/// is_leap_year: `bool`
+///     Boolean determining if year is a leap year
 fn check_if_leap_year(year: i32) -> bool {
     let rule1: bool = year % 4 == 0;
     let rule2: bool = year % 100 != 0;
     let rule3: bool = year % 400 == 0;
-    return rule1 && (rule2 || rule3);
+    let is_leap_year: bool = rule1 && (rule2 || rule3);
+    return is_leap_year
 }
