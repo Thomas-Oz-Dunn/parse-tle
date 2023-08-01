@@ -7,7 +7,7 @@ use chrono::{
 
 
 pub struct TLE {
-    name: &str,
+    name: String,
     year: u32,
     month: u32,
     day: u32,
@@ -33,7 +33,7 @@ pub struct TLE {
 /// 
 pub fn from_tle(
     tle_str: String
-) -> Vec<&str> {
+) -> TLE {
     let lines: Vec<&str> = tle_str.lines().collect();
     
     let name: &str = lines[0];
@@ -83,10 +83,7 @@ pub fn from_tle(
 
     let seconds_dec: f64 = minutes_part * 60.;
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
-
-    let date: NaiveDate = NaiveDate::from_ymd_opt(year, month, day).unwrap();
-    let time: NaiveTime = NaiveTime::from_hms_opt(hour, min, sec).unwrap();
-
+ 
     // let mean_motion_prime: &str = line1[4];
     // let mean_motion_2: &str = line1[5];
     
@@ -125,6 +122,21 @@ pub fn from_tle(
         .parse::<f64>()
         .unwrap();
 
+    TLE { 
+        name: (), 
+        year: (), 
+        month: (), 
+        day: (), 
+        hours: (), 
+        sec: (), 
+        inc: inc, 
+        raan: raan, 
+        eccentricity: eccentricity, 
+        mean_motion: mean_motion, 
+        arg_perigee: arg_perigee, 
+        mean_anomaly: mean_anomaly 
+    }
+
 }
 
 
@@ -135,7 +147,7 @@ pub fn from_tle(
 /// day_of_year: `u32`
 ///     Day of year (1-365)
 /// 
-/// year: `i32`
+/// year: `u32`
 ///     Year (e.g. 2020)
 /// 
 /// Outputs
@@ -147,7 +159,7 @@ pub fn from_tle(
 ///     Day of month (1-31)
 pub fn calc_month_day(
     day_of_year: u32,
-    year: i32
+    year: u32
 ) -> (u32, u32) {
     assert!(day_of_year < 366, "Day of year must be less than 366"); 
 
@@ -177,14 +189,14 @@ pub fn calc_month_day(
 /// 
 /// Inputs
 /// ------
-/// year: `i32`
+/// year: `u32`
 ///     Gregorian Year of common era.
 /// 
 /// Outputs
 /// -------
 /// is_leap_year: `bool`
 ///     Boolean determining if year is a leap year
-fn check_if_leap_year(year: i32) -> bool {
+fn check_if_leap_year(year: u32) -> bool {
     let rule1: bool = year % 4 == 0;
     let rule2: bool = year % 100 != 0;
     let rule3: bool = year % 400 == 0;
@@ -202,8 +214,8 @@ mod tle_tests {
         let year: u32 = 2023;
         let day_of_year: u32 = 78;
         let md = calc_month_day(day_of_year, year);
-        assert_eq!(md[0], 3);
-        assert_eq!(md[1], 3);
+        assert_eq!(md.0, 3);
+        assert_eq!(md.1, 3);
 
     }
 }
