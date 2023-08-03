@@ -2,23 +2,26 @@
 Parser for TLE
 */
 
-use chrono::{
-    DateTime, NaiveDateTime, NaiveDate, NaiveTime, Datelike, Timelike, Utc};
-
-
 pub struct TLE {
     name: String,
-    year: u32,
-    month: u32,
-    day: u32,
-    hours: u32,  
-    sec: u32,
+    catalog_number: u32,
+    international_designator: String,
+    epoch_year: u32,
+    epoch_month: u32,
+    epoch_day: u32,
+    epoch_hours: u32,  
+    epoch_min: u32,
+    epoch_sec: u32,
+    mean_motion_1: f64,
+    mean_motion_2: f64,
+    radiation_pressure: f64,
     inc: f64,
     raan: f64,
     eccentricity:  f64,
-    mean_motion: f64,
     arg_perigee: f64,
-    mean_anomaly: f64    
+    mean_anomaly: f64,    
+    mean_motion: f64,
+    rev_num: f64
 }
 
 /// Parse standard Two Line Element
@@ -31,28 +34,34 @@ pub struct TLE {
 /// Outputs
 /// -------
 /// 
-pub fn from_tle(
+pub fn parse(
     tle_str: String
 ) -> TLE {
     let lines: Vec<&str> = tle_str.lines().collect();
-    
+    // name
     let name: &str = lines[0];
     let bind1 = lines[1].to_string();
     let line1: Vec<&str> = bind1
         .split_whitespace()
         .collect();
-
+    
+    // catalog_number
+    let catalog_number = line1[2];
+    
+    // TODO-TD: international_designator
     let epoch_str: &str = line1[3];
-    let epoch_year: i32 = epoch_str[..=1]
+
+    let year_endian: u32 = epoch_str[..=1]
         .to_string()
         .parse::<u32>()
         .unwrap();
 
-    let year: u32;
-    if epoch_year < 57{
-        year = 2000 + epoch_year;
+    // epoch_year
+    let epoch_year: u32;
+    if year_endian < 57{
+        epoch_year = 2000 + year_endian;
     } else {
-        year = 1900 + epoch_year;
+        epoch_year = 1900 + year_endian;
     }
 
     let binding = epoch_str[2..]
@@ -60,81 +69,117 @@ pub fn from_tle(
     let epoch_day_full: Vec<&str> = binding
         .split_terminator('.')
         .collect();
-
     let day_of_year: u32 = epoch_day_full[0]
         .to_string()
         .parse::<u32>()
         .unwrap();
 
-    let md: (u32, u32) = xyzt::calc_month_day(day_of_year, year);
+    let md: (u32, u32) = calc_month_day(day_of_year, epoch_year);
     
+    // epoch_month
+    let epoch_month: u32 = md.0;
+
+    // epoch_day
+    let epoch_day: u32 = md.1;
+
     let percent_of_day: f64 = 
     (".".to_owned() + epoch_day_full[1])
         .parse::<f64>()
         .unwrap();
 
     let hours_dec: f64 = percent_of_day * 24.0;
+    // epoch_hours
     let hours_whole: u32 = hours_dec.div_euclid(24.0).floor() as u32;
     let hours_part: f64 = hours_dec.rem_euclid(24.0);
-    
     let minutes_dec: f64 = hours_part * 60.;
+
+    // epoch_min
     let minutes_whole: u32 = minutes_dec.div_euclid(60.).floor() as u32;
     let minutes_part: f64 = minutes_dec.rem_euclid(60.);
-
     let seconds_dec: f64 = minutes_part * 60.;
+
+    // epoch_sec
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
  
-    // let mean_motion_prime: &str = line1[4];
-    // let mean_motion_2: &str = line1[5];
+    
+    // mean_motion_1
+    let mean_motion_1: f64 = line1[4]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+
+    // mean_motion_2
+    let mean_motion_2: f64 = line1[5]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+
+    // TODO-TD: radiation_pressure
     
     let binding: String = lines[2].to_string();
     let line2: Vec<&str> = binding.split_whitespace().collect();
     
-    // Angles
+    // --- Angles
+    // inc
     let inc: f64 = line2[2]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
+    // raan
     let raan: f64 = line2[3]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
+    // eccentricity
     let eccentricity: f64 =
         (".".to_owned() + line2[4])
         .parse::<f64>()
         .unwrap();
 
+    // arg_perigee
     let arg_perigee: f64 = line2[5]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
+    // mean_anomaly
     let mean_anomaly: f64 = line2[6]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
     let end_str: &str = line2[line2.len()-1];
+    
+    // mean_motion
     let mean_motion: f64 = end_str[..11]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
-    TLE { 
-        name: (), 
-        year: (), 
-        month: (), 
-        day: (), 
-        hours: (), 
-        sec: (), 
-        inc: inc, 
-        raan: raan, 
-        eccentricity: eccentricity, 
-        mean_motion: mean_motion, 
-        arg_perigee: arg_perigee, 
-        mean_anomaly: mean_anomaly 
+    // rev_num
+
+    return TLE { 
+        name: name,
+        catalog_number: (),
+        international_designator: (),
+        epoch_year: epoch_year,
+        epoch_month: epoch_month,
+        epoch_day: epoch_day,
+        epoch_hours: hours_whole,
+        epoch_min: minutes_whole,
+        epoch_sec: seconds_whole,
+        mean_motion_1: mean_motion_1,
+        mean_motion_2: mean_motion_2,
+        radiation_pressure: (),
+        inc: inc,
+        raan: raan,
+        eccentricity:  eccentricity,
+        arg_perigee: arg_perigee,
+        mean_anomaly: mean_anomaly,
+        mean_motion: mean_motion,
+        rev_num: ()
     }
 
 }
