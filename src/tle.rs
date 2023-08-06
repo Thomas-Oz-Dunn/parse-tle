@@ -2,6 +2,11 @@
 Parser for TLE
 */
 
+use std::convert::From;
+use std::fmt::Display;
+use std::fmt::Formatter;
+
+#[derive(Clone, Debug)] 
 pub struct TLE {
     name: String,
     catalog_number: u32,
@@ -22,8 +27,21 @@ pub struct TLE {
     mean_anomaly: f64,    
     mean_motion: f64,
     rev_num: u32
-};
+}
 
+
+impl From<String> for TLE {
+    fn from(tle_string: String) -> TLE {
+        return parse(tle_string);
+    }
+}
+
+impl Display for TLE {
+    fn fmt(&self, _: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
+        let name = self.to_string();
+
+    }
+}
 /// Parse standard Two Line Element
 /// 
 /// Inputs
@@ -35,9 +53,9 @@ pub struct TLE {
 /// -------
 /// 
 pub fn parse(
-    tle_str: String
+    tle_string: String
 ) -> TLE {
-    let lines: Vec<&str> = tle_str.lines().collect();
+    let lines: Vec<&str> = tle_string.lines().collect();
     // name
     let name: &str = lines[0];
     let bind1: String = lines[1].to_string();
@@ -51,7 +69,6 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
     
-    // TODO-TD: international_designator
     let epoch_str: &str = line1[3];
 
     let year_endian: u32 = epoch_str[..=1]
@@ -112,7 +129,7 @@ pub fn parse(
         .unwrap();
 
     // mean_motion_2
-    // TODO 0.000-0 > 0.000e-1
+    // TODO-TD: map 0.000-0 > 0.000e-1
     let mean_motion_2: f64 = line1[5]
         .to_string()
         .parse::<f64>()
