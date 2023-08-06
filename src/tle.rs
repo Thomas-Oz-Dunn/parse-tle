@@ -271,8 +271,24 @@ mod tle_tests {
         let year: u32 = 2023;
         let day_of_year: u32 = 78;
         let md = calc_month_day(day_of_year, year);
+        
         assert_eq!(md.0, 3);
         assert_eq!(md.1, 3);
+
+    }
+
+    fn test_check_if_leap_year(){
+        let test_year = 2022;
+
+        let is_leap_year = check_if_leap_year(test_year);
+
+        assert_eq!(is_leap_year, false);
+
+    }
+
+    fn test_parser(){
+        let sample_tle = "";
+
 
     }
 }
