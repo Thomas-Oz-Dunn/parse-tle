@@ -21,8 +21,8 @@ pub struct TLE {
     arg_perigee: f64,
     mean_anomaly: f64,    
     mean_motion: f64,
-    rev_num: f64
-}
+    rev_num: u32
+};
 
 /// Parse standard Two Line Element
 /// 
@@ -46,7 +46,10 @@ pub fn parse(
         .collect();
     
     // catalog_number
-    let catalog_number: &str = line1[2];
+    let catalog_number: u32 = line1[2]
+        .to_string()
+        .parse::<u32>()
+        .unwrap();
     
     // TODO-TD: international_designator
     let epoch_str: &str = line1[3];
@@ -109,12 +112,17 @@ pub fn parse(
         .unwrap();
 
     // mean_motion_2
+    // TODO 0.000-0 > 0.000e-1
     let mean_motion_2: f64 = line1[5]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
-    // TODO-TD: radiation_pressure
+    // radiation_pressure
+    let radiation_pressure: f64 = line1[6]
+    .to_string()
+    .parse::<f64>()
+    .unwrap();
     
     let binding: String = lines[2].to_string();
     let line2: Vec<&str> = binding.split_whitespace().collect();
@@ -159,11 +167,15 @@ pub fn parse(
         .unwrap();
 
     // rev_num
+    let rev_num: u32 = end_str[12..16]
+        .to_string()
+        .parse::<u32>()
+        .unwrap();
 
     return TLE { 
         name: name.to_string(),
-        catalog_number: (),
-        international_designator: (),
+        catalog_number: catalog_number,
+        international_designator: epoch_str.to_string(),
         epoch_year: epoch_year,
         epoch_month: epoch_month,
         epoch_day: epoch_day,
@@ -172,14 +184,14 @@ pub fn parse(
         epoch_sec: seconds_whole,
         mean_motion_1: mean_motion_1,
         mean_motion_2: mean_motion_2,
-        radiation_pressure: (),
+        radiation_pressure: radiation_pressure,
         inc: inc,
         raan: raan,
         eccentricity:  eccentricity,
         arg_perigee: arg_perigee,
         mean_anomaly: mean_anomaly,
         mean_motion: mean_motion,
-        rev_num: ()
+        rev_num: rev_num
     }
 
 }
