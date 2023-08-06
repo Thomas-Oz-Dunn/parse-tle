@@ -40,13 +40,13 @@ pub fn parse(
     let lines: Vec<&str> = tle_str.lines().collect();
     // name
     let name: &str = lines[0];
-    let bind1 = lines[1].to_string();
+    let bind1: String = lines[1].to_string();
     let line1: Vec<&str> = bind1
         .split_whitespace()
         .collect();
     
     // catalog_number
-    let catalog_number = line1[2];
+    let catalog_number: &str = line1[2];
     
     // TODO-TD: international_designator
     let epoch_str: &str = line1[3];
@@ -64,7 +64,7 @@ pub fn parse(
         epoch_year = 1900 + year_endian;
     }
 
-    let binding = epoch_str[2..]
+    let binding: String = epoch_str[2..]
         .to_string();
     let epoch_day_full: Vec<&str> = binding
         .split_terminator('.')
@@ -161,7 +161,7 @@ pub fn parse(
     // rev_num
 
     return TLE { 
-        name: name,
+        name: name.to_string(),
         catalog_number: (),
         international_designator: (),
         epoch_year: epoch_year,
