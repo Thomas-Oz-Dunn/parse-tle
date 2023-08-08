@@ -5,6 +5,7 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::fmt::Result;
 
 #[derive(Clone, Debug)] 
 pub struct TLE {
@@ -37,11 +38,25 @@ impl From<String> for TLE {
 }
 
 impl Display for TLE {
-    fn fmt(&self, _: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
-        let name = self.to_string();
+
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
+        write!(
+            formatter, 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}::{}::{}\n
+            Mean Motion: {}\nMean Motion`: {}\nMean Motion``: {}\n
+            Radiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\n
+            argument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
+            self.name, self.catalog_number, self.international_designator,
+            self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
+            self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
+            self.mean_motion_2, self.radiation_pressure, self.inc, self.raan, 
+            self.eccentricity, self.arg_perigee, self.mean_anomaly, self.rev_num
+        )
 
     }
 }
+
+
 /// Parse standard Two Line Element
 /// 
 /// Inputs
