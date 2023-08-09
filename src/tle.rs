@@ -3,9 +3,7 @@ Parser for TLE
 */
 
 use std::convert::From;
-use std::fmt::Display;
-use std::fmt::Formatter;
-use std::fmt::Result;
+use std::fmt::{Display, Formatter, Result};
 
 #[derive(Clone, Debug)] 
 pub struct TLE {
@@ -66,7 +64,7 @@ impl Display for TLE {
 /// 
 /// Outputs
 /// -------
-/// 
+/// TLE
 pub fn parse(
     tle_string: String
 ) -> TLE {
@@ -145,10 +143,18 @@ pub fn parse(
 
     // mean_motion_2
     // TODO-TD: map 0.000-0 > 0.000e-1
-    let mean_motion_2: f64 = line1[5]
+    let split_mean_motion: Vec<&str> = line1[5]
+        .split_terminator('-')
+        .collect();
+    let mean_motion_base: f64 = split_mean_motion[0]
         .to_string()
         .parse::<f64>()
         .unwrap();
+    let mean_motion_power: f64 = split_mean_motion[1]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let mean_motion_2: f64 = mean_motion_base * (10 as f64).powf(mean_motion_power);
 
     // radiation_pressure
     let radiation_pressure: f64 = line1[6]
