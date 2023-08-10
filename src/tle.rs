@@ -29,11 +29,12 @@ pub struct TLE {
 }
 
 
-impl From<String> for TLE {
-    fn from(tle_string: String) -> TLE {
+impl From<&str> for TLE {
+    fn from(tle_string: &str) -> TLE {
         return parse(tle_string);
     }
 }
+
 
 impl Display for TLE {
 
@@ -59,14 +60,14 @@ impl Display for TLE {
 /// 
 /// Inputs
 /// ------
-/// tle_str : `String` 
+/// tle_str : `&str` 
 ///     NORAD Two Line Element Identification String
 /// 
 /// Outputs
 /// -------
 /// TLE
 pub fn parse(
-    tle_string: String
+    tle_string: &str
 ) -> TLE {
     let lines: Vec<&str> = tle_string.lines().collect();
     // name
@@ -339,18 +340,25 @@ mod tle_tests {
 
     }
 
+    #[test]
     fn test_check_if_leap_year(){
-        let test_year = 2022;
-
-        let is_leap_year = check_if_leap_year(test_year);
-
+        let test_year: u32 = 2022;
+        let is_leap_year: bool = check_if_leap_year(test_year);
         assert_eq!(is_leap_year, false);
 
     }
 
+    #[test]
     fn test_parser(){
-        let sample_tle = "";
+        let sample_tle = "CHANDRAYAAN-3           
+        1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+        2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
+        let chandrayaan_3 = parse(sample_tle);
+
+        assert_eq!(chandrayaan_3.name, "CHANDRAYAAN-3".to_string());
+
+        assert_eq!(chandrayaan_3.epoch_year, 2023);
 
     }
 }
