@@ -133,24 +133,48 @@ pub fn parse(
 
     // epoch_sec
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
- 
     
     // mean_motion_1
-    let mean_motion_1: f64 = line1[4]
+    let splitter_1: char;
+    let sign: f64;
+    if line1[4].contains('-'){
+        splitter_1 = '-';
+        sign = -1.;
+    } else {
+        splitter_1 = '+';
+        sign = 1.;
+    }
+    let split_mean_motion_1: Vec<&str> = line1[4]
+        .split_terminator(splitter_1)
+        .collect();
+    let mean_motion_1_base: f64 = split_mean_motion_1[0]
         .to_string()
         .parse::<f64>()
         .unwrap();
+    let mean_motion_1_power: f64 = sign * split_mean_motion_1[1]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let mean_motion_1: f64 = mean_motion_1_base * (10 as f64).powf(mean_motion_1_power);
 
     // mean_motion_2
-    // TODO-TD: map 0.000-0 > 0.000e-1
+    let splitter_2: char;
+    let sign_2: f64;
+    if line1[5].contains('-'){
+        splitter_2 = '-';
+        sign_2 = -1.;
+    } else {
+        splitter_2 = '+';
+        sign_2 = 1.;
+    }
     let split_mean_motion: Vec<&str> = line1[5]
-        .split_terminator('-')
+        .split_terminator(splitter_2)
         .collect();
     let mean_motion_base: f64 = split_mean_motion[0]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_motion_power: f64 = split_mean_motion[1]
+    let mean_motion_power: f64 = sign_2 * split_mean_motion[1]
         .to_string()
         .parse::<f64>()
         .unwrap();
@@ -158,9 +182,9 @@ pub fn parse(
 
     // radiation_pressure
     let radiation_pressure: f64 = line1[6]
-    .to_string()
-    .parse::<f64>()
-    .unwrap();
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
     
     let binding: String = lines[2].to_string();
     let line2: Vec<&str> = binding.split_whitespace().collect();
