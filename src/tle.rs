@@ -8,7 +8,7 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Clone, Debug)] 
 pub struct TLE {
     name: String,
-    catalog_number: u32,
+    catalog_number: String,
     international_designator: String,
     epoch_year: u32,
     epoch_month: u32,
@@ -78,11 +78,7 @@ pub fn parse(
         .collect();
     
     // catalog_number
-    let catalog_number: u32 = line1[2]
-        .to_string()
-        .parse::<u32>()
-        .unwrap();
-    
+    let catalog_number: &str = line1[2];
     let epoch_str: &str = line1[3];
 
     let year_endian: u32 = epoch_str[..=1]
@@ -116,8 +112,7 @@ pub fn parse(
     // epoch_day
     let epoch_day: u32 = md.1;
 
-    let percent_of_day: f64 = 
-    (".".to_owned() + epoch_day_full[1])
+    let percent_of_day: f64 = (".".to_owned() + epoch_day_full[1])
         .parse::<f64>()
         .unwrap();
 
@@ -237,7 +232,7 @@ pub fn parse(
 
     return TLE { 
         name: name.to_string(),
-        catalog_number: catalog_number,
+        catalog_number: catalog_number.to_string(),
         international_designator: epoch_str.to_string(),
         epoch_year: epoch_year,
         epoch_month: epoch_month,
@@ -335,8 +330,8 @@ mod tle_tests {
         let day_of_year: u32 = 78;
         let md = calc_month_day(day_of_year, year);
         
-        assert_eq!(md.0, 3);
-        assert_eq!(md.1, 3);
+        assert_eq!(md.0, 2);
+        assert_eq!(md.1, 19);
 
     }
 
