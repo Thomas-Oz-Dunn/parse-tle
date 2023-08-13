@@ -73,13 +73,13 @@ pub fn parse(
     // name
     let name: &str = lines[0];
     let bind1: String = lines[1].to_string();
-    let line1: Vec<&str> = bind1
-        .split_whitespace()
-        .collect();
     
     // catalog_number
-    let catalog_number: &str = line1[2];
-    let epoch_str: &str = line1[3];
+    let catalog_number: &str = &bind1[2..=7];
+    
+    let intnl_desig: &str = &bind1[9..=16];
+
+    let epoch_str: &str = &bind1[18..=31];
 
     let year_endian: u32 = epoch_str[..=1]
         .to_string()
@@ -131,59 +131,25 @@ pub fn parse(
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
     
     // mean_motion_1
-    let splitter_1: char;
-    let sign: f64;
-    if line1[4].contains('-'){
-        splitter_1 = '-';
-        sign = -1.;
-    } else {
-        splitter_1 = '+';
-        sign = 1.;
-    }
-    let split_mean_motion_1: Vec<&str> = line1[4]
-        .split_terminator(splitter_1)
-        .collect();
-    let mean_motion_1_base: f64 = split_mean_motion_1[0]
+    let mean_motion_1: f64 = bind1[33..=43]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_motion_1_power: f64 = sign * split_mean_motion_1[1]
-        .to_string()
-        .parse::<f64>()
-        .unwrap();
-    let mean_motion_1: f64 = mean_motion_1_base * (10 as f64).powf(mean_motion_1_power);
 
     // mean_motion_2
-    let splitter_2: char;
-    let sign_2: f64;
-    if line1[5].contains('-'){
-        splitter_2 = '-';
-        sign_2 = -1.;
-    } else {
-        splitter_2 = '+';
-        sign_2 = 1.;
-    }
-    let split_mean_motion: Vec<&str> = line1[5]
-        .split_terminator(splitter_2)
-        .collect();
-    let mean_motion_base: f64 = split_mean_motion[0]
+    let mean_motion_2: f64 = bind1[44..=51]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_motion_power: f64 = sign_2 * split_mean_motion[1]
-        .to_string()
-        .parse::<f64>()
-        .unwrap();
-    let mean_motion_2: f64 = mean_motion_base * (10 as f64).powf(mean_motion_power);
 
     // radiation_pressure
-    let radiation_pressure: f64 = line1[6]
+    let radiation_pressure: f64 = bind1[53..=60]
         .to_string()
         .parse::<f64>()
         .unwrap();
     
-    let binding: String = lines[2].to_string();
-    let line2: Vec<&str> = binding.split_whitespace().collect();
+    let bind2: String = lines[2].to_string();
+    let line2: Vec<&str> = bind2.split_whitespace().collect();
     
     // --- Angles
     // inc
