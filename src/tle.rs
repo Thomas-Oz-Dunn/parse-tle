@@ -132,6 +132,7 @@ pub fn parse(
     
     // mean_motion_1
     // TODO sign, decimal, values
+    let mean_motion_1_sign: String = bind1[33..=33].to_string();
     let mean_motion_1: f64 = bind1[33..=43]
         .to_string()
         .parse::<f64>()
@@ -139,6 +140,7 @@ pub fn parse(
 
     // mean_motion_2
     // TODO sign, values, power
+    let mean_motion_2_sign: String = bind1[44..=44].to_string();
     let mean_motion_2: f64 = bind1[44..=51]
         .to_string()
         .parse::<f64>()
@@ -146,6 +148,7 @@ pub fn parse(
 
     // radiation_pressure
     // TODO sign, values, power
+    let radiation_pressure_sign: String = bind1[53..=53].to_string();
     let radiation_pressure: f64 = bind1[53..=60]
         .to_string()
         .parse::<f64>()
