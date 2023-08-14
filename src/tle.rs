@@ -132,7 +132,8 @@ pub fn parse(
     
     // mean_motion_1
     // TODO sign, decimal, values
-    let mean_motion_1_sign: String = bind1[33..=33].to_string();
+    let mean_motion_1_sign: f64 = (
+        bind1[33..=33].to_string() +  "1").parse::<f64>().unwrap();
     let mean_motion_1: f64 = bind1[33..=43]
         .to_string()
         .parse::<f64>()
@@ -140,7 +141,8 @@ pub fn parse(
 
     // mean_motion_2
     // TODO sign, values, power
-    let mean_motion_2_sign: String = bind1[44..=44].to_string();
+    let mean_motion_2_sign: f64 = (
+        bind1[44..=44].to_string() +  "1").parse::<f64>().unwrap();
     let mean_motion_2: f64 = bind1[44..=51]
         .to_string()
         .parse::<f64>()
@@ -148,7 +150,8 @@ pub fn parse(
 
     // radiation_pressure
     // TODO sign, values, power
-    let radiation_pressure_sign: String = bind1[53..=53].to_string();
+    let radiation_pressure_sign: f64 = (
+        bind1[53..=53].to_string() +  "1").parse::<f64>().unwrap();
     let radiation_pressure: f64 = bind1[53..=60]
         .to_string()
         .parse::<f64>()
@@ -159,22 +162,13 @@ pub fn parse(
     
     // --- Angles
     // inc
-    let inc: f64 = line2[2]
-        .to_string()
-        .parse::<f64>()
-        .unwrap();
+    let inc: f64 = line2[2].to_string().parse::<f64>().unwrap();
 
     // raan
-    let raan: f64 = line2[3]
-        .to_string()
-        .parse::<f64>()
-        .unwrap();
+    let raan: f64 = line2[3].to_string().parse::<f64>().unwrap();
 
     // eccentricity
-    let eccentricity: f64 =
-        (".".to_owned() + line2[4])
-        .parse::<f64>()
-        .unwrap();
+    let eccentricity: f64 =(".".to_owned() + line2[4]).parse::<f64>().unwrap();
 
     // arg_perigee
     let arg_perigee: f64 = line2[5]
@@ -205,7 +199,7 @@ pub fn parse(
     return TLE { 
         name: name.to_string(),
         catalog_number: catalog_number.to_string(),
-        international_designator: epoch_str.to_string(),
+        international_designator: intnl_desig.to_string(),
         epoch_year: epoch_year,
         epoch_month: epoch_month,
         epoch_day: epoch_day,
