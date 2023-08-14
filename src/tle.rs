@@ -131,28 +131,31 @@ pub fn parse(
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
     
     // mean_motion_1
-    // TODO sign, decimal, values
+    // TODO decimal, values
     let mean_motion_1_sign: f64 = (
         bind1[33..=33].to_string() +  "1").parse::<f64>().unwrap();
-    let mean_motion_1: f64 = bind1[33..=43]
+    let mean_motion_1_base = bind1[34..=42]
         .to_string()
         .parse::<f64>()
         .unwrap();
+    let mean_motion_1: f64 = mean_motion_1_base * mean_motion_1_sign;
 
     // mean_motion_2
-    // TODO sign, values, power
+    // TODO values, power
     let mean_motion_2_sign: f64 = (
         bind1[44..=44].to_string() +  "1").parse::<f64>().unwrap();
-    let mean_motion_2: f64 = bind1[44..=51]
+    let mean_motion_2_base = bind1[45..=49]
         .to_string()
         .parse::<f64>()
         .unwrap();
-
+    let mean_motion_2_pow: f64 = (
+        bind1[50..=51].to_string()).parse::<f64>().unwrap();
+        
     // radiation_pressure
-    // TODO sign, values, power
+    // TODO values, power
     let radiation_pressure_sign: f64 = (
         bind1[53..=53].to_string() +  "1").parse::<f64>().unwrap();
-    let radiation_pressure: f64 = bind1[53..=60]
+    let radiation_pressure: f64 = bind1[54..=60]
         .to_string()
         .parse::<f64>()
         .unwrap();
