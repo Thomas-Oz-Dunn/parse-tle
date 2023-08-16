@@ -104,13 +104,13 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    let md: (u32, u32) = calc_month_day(day_of_year, epoch_year);
+    let month_day: (u32, u32) = calc_month_day(day_of_year, epoch_year);
     
     // epoch_month
-    let epoch_month: u32 = md.0;
+    let epoch_month: u32 = month_day.0;
 
     // epoch_day
-    let epoch_day: u32 = md.1;
+    let epoch_day: u32 = month_day.1;
 
     let percent_of_day: f64 = (".".to_owned() + epoch_day_full[1])
         .parse::<f64>()
@@ -134,7 +134,7 @@ pub fn parse(
     // TODO decimal, values
     let mean_motion_1_sign: f64 = (
         bind1[33..=33].to_string() +  "1").parse::<f64>().unwrap();
-    let mean_motion_1_base = bind1[34..=42]
+    let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
         .unwrap();
@@ -142,23 +142,27 @@ pub fn parse(
 
     // mean_motion_2
     // TODO values, power
-    let mean_motion_2_sign: f64 = (
+    let mean_mot_2_sign: f64 = (
         bind1[44..=44].to_string() +  "1").parse::<f64>().unwrap();
-    let mean_motion_2_base = bind1[45..=49]
+    let mean_mot_2_base: f64 = bind1[45..=49]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_motion_2_pow: f64 = (
-        bind1[50..=51].to_string()).parse::<f64>().unwrap();
-        
+    let mean_mot_2_pow: f64 = 10_f64.powf((
+        bind1[50..=51].to_string()).parse::<f64>().unwrap());
+    let mean_motion_2: f64 = (mean_mot_2_sign * mean_mot_2_base) * mean_mot_2_pow;
+
     // radiation_pressure
     // TODO values, power
-    let radiation_pressure_sign: f64 = (
+    let rad_press_sign: f64 = (
         bind1[53..=53].to_string() +  "1").parse::<f64>().unwrap();
-    let radiation_pressure: f64 = bind1[54..=60]
+    let rad_press_base: f64 = bind1[54..=58]
         .to_string()
         .parse::<f64>()
         .unwrap();
+    let rad_press_pow: f64 = 10_f64.powf((
+        bind1[59..=60].to_string()).parse::<f64>().unwrap());
+    let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
     let bind2: String = lines[2].to_string();
     let line2: Vec<&str> = bind2.split_whitespace().collect();
