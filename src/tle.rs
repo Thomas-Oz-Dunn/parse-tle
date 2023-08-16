@@ -70,9 +70,11 @@ pub fn parse(
     tle_string: &str
 ) -> TLE {
     let lines: Vec<&str> = tle_string.lines().collect();
+    
+    // FIXME-TD: normalize indents
     // name
     let name: &str = lines[0];
-    let bind1: String = lines[1].to_string();
+    let bind1: String = lines[1].trim().to_string();
     
     // catalog_number
     let catalog_number: &str = &bind1[2..=7];
@@ -131,9 +133,8 @@ pub fn parse(
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
     
     // mean_motion_1
-    // TODO decimal, values
     let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() +  "1").parse::<f64>().unwrap();
+        bind1[33..=33].to_string() +  "1").trim().parse::<f64>().unwrap();
     let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
@@ -141,9 +142,8 @@ pub fn parse(
     let mean_motion_1: f64 = mean_motion_1_base * mean_motion_1_sign;
 
     // mean_motion_2
-    // TODO values, power
     let mean_mot_2_sign: f64 = (
-        bind1[44..=44].to_string() +  "1").parse::<f64>().unwrap();
+        bind1[44..=44].to_string() +  "1").trim().parse::<f64>().unwrap();
     let mean_mot_2_base: f64 = bind1[45..=49]
         .to_string()
         .parse::<f64>()
@@ -153,9 +153,8 @@ pub fn parse(
     let mean_motion_2: f64 = (mean_mot_2_sign * mean_mot_2_base) * mean_mot_2_pow;
 
     // radiation_pressure
-    // TODO values, power
     let rad_press_sign: f64 = (
-        bind1[53..=53].to_string() +  "1").parse::<f64>().unwrap();
+        bind1[53..=53].to_string() +  "1").trim().parse::<f64>().unwrap();
     let rad_press_base: f64 = bind1[54..=58]
         .to_string()
         .parse::<f64>()
@@ -166,7 +165,7 @@ pub fn parse(
     
     let bind2: String = lines[2].to_string();
     let line2: Vec<&str> = bind2.split_whitespace().collect();
-    
+    // TODO-TD: Replaceby slot by slot parsing
     // --- Angles
     // inc
     let inc: f64 = line2[2].to_string().parse::<f64>().unwrap();
@@ -189,6 +188,7 @@ pub fn parse(
         .parse::<f64>()
         .unwrap();
 
+    println!("{}", line2[7]);
     let end_str: &str = line2[line2.len()-1];
     
     // mean_motion
@@ -318,9 +318,10 @@ mod tle_tests {
 
     #[test]
     fn test_parser(){
-        let sample_tle = "CHANDRAYAAN-3           
-        1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
-        2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
+        let sample_tle = 
+"CHANDRAYAAN-3           
+1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
         let chandrayaan_3 = parse(sample_tle);
 
