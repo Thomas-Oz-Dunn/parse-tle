@@ -66,12 +66,12 @@ impl Display for TLE {
 /// Outputs
 /// -------
 /// TLE
+///     TLE struct
 pub fn parse(
     tle_string: &str
 ) -> TLE {
     let lines: Vec<&str> = tle_string.lines().collect();
     
-    // FIXME-TD: normalize indents
     // name
     let name: &str = lines[0];
     let bind1: String = lines[1].trim().to_string();
@@ -108,10 +108,7 @@ pub fn parse(
 
     let month_day: (u32, u32) = calc_month_day(day_of_year, epoch_year);
     
-    // epoch_month
     let epoch_month: u32 = month_day.0;
-
-    // epoch_day
     let epoch_day: u32 = month_day.1;
 
     let percent_of_day: f64 = (".".to_owned() + epoch_day_full[1])
@@ -164,42 +161,42 @@ pub fn parse(
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
     let bind2: String = lines[2].to_string();
-    let line2: Vec<&str> = bind2.split_whitespace().collect();
-    // TODO-TD: Replaceby slot by slot parsing
+
     // --- Angles
     // inc
-    let inc: f64 = line2[2].to_string().parse::<f64>().unwrap();
-
+    let inc: f64 = bind2[8..=15].to_string().trim().parse::<f64>().unwrap(); 
+    
     // raan
-    let raan: f64 = line2[3].to_string().parse::<f64>().unwrap();
-
+    let raan: f64 = bind2[17..=24].to_string().trim().parse::<f64>().unwrap();
+    
     // eccentricity
-    let eccentricity: f64 =(".".to_owned() + line2[4]).parse::<f64>().unwrap();
-
+    let eccentricity: f64 = (
+        ".".to_owned() + &bind2[26..=32]
+    ).parse::<f64>().unwrap();
+    
     // arg_perigee
-    let arg_perigee: f64 = line2[5]
+    let arg_perigee: f64 = bind2[34..=41]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
     // mean_anomaly
-    let mean_anomaly: f64 = line2[6]
+    let mean_anomaly: f64 = bind2[44..=50]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
-    println!("{}", line2[7]);
-    let end_str: &str = line2[line2.len()-1];
-    
     // mean_motion
-    let mean_motion: f64 = end_str[..11]
+    let mean_motion: f64 = bind2[52..=62]
         .to_string()
+        .trim()
         .parse::<f64>()
         .unwrap();
 
     // rev_num
-    let rev_num: u32 = end_str[12..16]
+    let rev_num: u32 = bind2[64..=68]
         .to_string()
+        .trim()
         .parse::<u32>()
         .unwrap();
 
