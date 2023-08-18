@@ -41,10 +41,7 @@ impl Display for TLE {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
         write!(
             formatter, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}::{}::{}\n
-            Mean Motion: {}\nMean Motion`: {}\nMean Motion``: {}\n
-            Radiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\n
-            argument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}::{}::{}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\nargument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
             self.name, self.catalog_number, self.international_designator,
             self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
             self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
@@ -160,7 +157,7 @@ pub fn parse(
         bind1[59..=60].to_string()).parse::<f64>().unwrap());
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
-    let bind2: String = lines[2].to_string();
+    let bind2: String = lines[2].trim().to_string();
 
     // --- Angles
     // inc
@@ -201,9 +198,9 @@ pub fn parse(
         .unwrap();
 
     return TLE { 
-        name: name.to_string(),
-        catalog_number: catalog_number.to_string(),
-        international_designator: intnl_desig.to_string(),
+        name: name.trim().to_string(),
+        catalog_number: catalog_number.trim().to_string(),
+        international_designator: intnl_desig.trim().to_string(),
         epoch_year: epoch_year,
         epoch_month: epoch_month,
         epoch_day: epoch_day,
@@ -315,16 +312,17 @@ mod tle_tests {
 
     #[test]
     fn test_parser(){
-        let sample_tle = 
-"CHANDRAYAAN-3           
-1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
-2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
+        let sample_tle = "CHANDRAYAAN-3      
+            1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+            2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
-        let chandrayaan_3 = parse(sample_tle);
+        let chandrayaan_3: TLE = parse(sample_tle);
 
         assert_eq!(chandrayaan_3.name, "CHANDRAYAAN-3".to_string());
 
         assert_eq!(chandrayaan_3.epoch_year, 2023);
+
+        assert_eq!(chandrayaan_3.inc, 21.3360);
 
     }
 }
