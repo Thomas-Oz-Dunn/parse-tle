@@ -2,14 +2,14 @@ use parse_tle::tle::*;
 
 fn main() {
     
-    // Parse the command line for: 
+    // TODO-TD: Parse the command line for: 
 
     // Direct TLE string
 
-    // flag w/ file path 
+    // flag w/ file path to .txt on local machine 
 
-    // flag for celestrak mode query site with key desired
-
+    // flag for celestrak mode query with key desired
+    
     let  tle_string: &str = 
     "ISS (ZARYA)
     1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927

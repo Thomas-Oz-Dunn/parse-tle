@@ -41,7 +41,7 @@ impl Display for TLE {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
         write!(
             formatter, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}::{}::{}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\nargument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\nargument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
             self.name, self.catalog_number, self.international_designator,
             self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
             self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
@@ -80,7 +80,7 @@ pub fn parse(
 
     let epoch_str: &str = &bind1[18..=31];
 
-    let year_endian: u32 = epoch_str[..=1]
+    let year_endian: u32 = epoch_str[0..=1]
         .to_string()
         .parse::<u32>()
         .unwrap();
