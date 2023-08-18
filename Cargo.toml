@@ -2,7 +2,7 @@
 name = "parse-tle"
 version = "0.1.0"
 edition = "2021"
-description = "Parse two line element se"
+description = "Parse two line element set"
 license = "MIT"
 keywords = ["astrodynamics", "astronomy", "satellites"]
 repository = "https://github.com/Thomas-Oz-Dunn/parse-tle"
