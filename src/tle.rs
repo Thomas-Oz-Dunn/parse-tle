@@ -7,25 +7,25 @@ use std::fmt::{Display, Formatter, Result};
 
 #[derive(Clone, Debug)] 
 pub struct TLE {
-    name: String,
-    catalog_number: String,
-    international_designator: String,
-    epoch_year: u32,
-    epoch_month: u32,
-    epoch_day: u32,
-    epoch_hours: u32,  
-    epoch_min: u32,
-    epoch_sec: u32,
-    mean_motion_1: f64,
-    mean_motion_2: f64,
-    radiation_pressure: f64,
-    inc: f64,
-    raan: f64,
-    eccentricity:  f64,
-    arg_perigee: f64,
-    mean_anomaly: f64,    
-    mean_motion: f64,
-    rev_num: u32
+    pub name: String,
+    pub catalog_number: String,
+    pub international_designator: String,
+    pub epoch_year: u32,
+    pub epoch_month: u32,
+    pub epoch_day: u32,
+    pub epoch_hours: u32,  
+    pub epoch_min: u32,
+    pub epoch_sec: u32,
+    pub mean_motion_1: f64,
+    pub mean_motion_2: f64,
+    pub radiation_pressure: f64,
+    pub inc: f64,
+    pub raan: f64,
+    pub eccentricity:  f64,
+    pub arg_perigee: f64,
+    pub mean_anomaly: f64,    
+    pub mean_motion: f64,
+    pub rev_num: u32
 }
 
 
