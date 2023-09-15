@@ -5,6 +5,8 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 
+use hifitime::prelude::*;
+
 #[derive(Clone, Debug)] 
 pub struct TLE {
     pub name: String,
@@ -28,14 +30,17 @@ pub struct TLE {
     pub rev_num: u32
 }
 
-
+/// From method for TLE struct
 impl From<&str> for TLE {
-    fn from(tle_string: &str) -> TLE {
-        return parse(tle_string);
+
+    /// From 
+    fn from(tle_str: &str) -> TLE {
+        return parse(tle_str);
     }
 }
 
 
+/// Display method for TLE struct
 impl Display for TLE {
 
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
@@ -57,7 +62,7 @@ impl Display for TLE {
 /// 
 /// Inputs
 /// ------
-/// tle_str : `&str` 
+/// str : `&str` 
 ///     NORAD Two Line Element Identification String
 /// 
 /// Outputs
@@ -65,9 +70,11 @@ impl Display for TLE {
 /// TLE
 ///     TLE struct
 pub fn parse(
-    tle_string: &str
+    tle_str: &str
 ) -> TLE {
-    let lines: Vec<&str> = tle_string.lines().collect();
+
+    // TODO-TD: add checks for correct formatting
+    let lines: Vec<&str> = tle_str.lines().collect();
     
     // name
     let name: &str = lines[0];
@@ -113,6 +120,7 @@ pub fn parse(
         .unwrap();
 
     let hours_dec: f64 = percent_of_day * 24.0;
+
     // epoch_hours
     let hours_whole: u32 = hours_dec.div_euclid(24.0).floor() as u32;
     let hours_part: f64 = hours_dec.rem_euclid(24.0);
@@ -128,7 +136,7 @@ pub fn parse(
     
     // mean_motion_1
     let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[33..=33].to_string() + "1").trim().parse::<f64>().unwrap();
     let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
@@ -142,8 +150,11 @@ pub fn parse(
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_mot_2_pow: f64 = 10_f64.powf((
-        bind1[50..=51].to_string()).parse::<f64>().unwrap());
+    let mean_mot_2_exp = bind1[50..=51]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let mean_mot_2_pow: f64 = 10_f64.powf(mean_mot_2_exp);
     let mean_motion_2: f64 = (mean_mot_2_sign * mean_mot_2_base) * mean_mot_2_pow;
 
     // radiation_pressure
@@ -153,18 +164,29 @@ pub fn parse(
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let rad_press_pow: f64 = 10_f64.powf((
-        bind1[59..=60].to_string()).parse::<f64>().unwrap());
+    let rad_press_exp = bind1[59..=60]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
     let bind2: String = lines[2].trim().to_string();
 
     // --- Angles
     // inc
-    let inc: f64 = bind2[8..=15].to_string().trim().parse::<f64>().unwrap(); 
+    let inc: f64 = bind2[8..=15]
+        .to_string()
+        .trim()
+        .parse::<f64>()
+        .unwrap(); 
     
     // raan
-    let raan: f64 = bind2[17..=24].to_string().trim().parse::<f64>().unwrap();
+    let raan: f64 = bind2[17..=24]
+        .to_string()
+        .trim()
+        .parse::<f64>()
+        .unwrap();
     
     // eccentricity
     let eccentricity: f64 = (

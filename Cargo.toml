@@ -7,5 +7,8 @@ license = "MIT"
 keywords = ["astrodynamics", "astronomy", "satellites"]
 repository = "https://github.com/Thomas-Oz-Dunn/parse-tle"
 
+[dependencies]
+hifitime = "3.8.4"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
