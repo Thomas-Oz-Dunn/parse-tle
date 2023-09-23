@@ -12,6 +12,7 @@ pub struct TLE {
     pub name: String,
     pub catalog_number: String,
     pub international_designator: String,
+    pub epoch: Epoch,
     pub epoch_year: u32,
     pub epoch_month: u32,
     pub epoch_day: u32,
@@ -134,6 +135,21 @@ pub fn parse(
     // epoch_sec
     let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
     
+    // hifitime epoch
+    let full_epoch = Epoch::from_gregorian_hms(
+        epoch_year as i32, 
+        epoch_month as u8, 
+        epoch_day, 
+        epoch_hour, 
+        epoch_minute, 
+        epoch_second, 
+        time_scale
+    );
+
+
+
+
+
     // mean_motion_1
     let mean_motion_1_sign: f64 = (
         bind1[33..=33].to_string() + "1").trim().parse::<f64>().unwrap();
@@ -223,6 +239,7 @@ pub fn parse(
         name: name.trim().to_string(),
         catalog_number: catalog_number.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
+        epoch:,
         epoch_year: epoch_year,
         epoch_month: epoch_month,
         epoch_day: epoch_day,
