@@ -7,6 +7,9 @@ use std::fmt::{Display, Formatter, Result};
 
 use hifitime::prelude::*;
 
+// TODO-TD: add serde integration
+// TODO-TD: minimize memory requirements where possible
+
 #[derive(Clone, Debug)] 
 pub struct TLE {
     pub name: String,
@@ -31,7 +34,7 @@ pub struct TLE {
     pub rev_num: u32
 }
 
-/// From method for TLE struct
+/// From method for `TLE` struct
 impl From<&str> for TLE {
 
     /// From 
@@ -41,7 +44,7 @@ impl From<&str> for TLE {
 }
 
 
-/// Display method for TLE struct
+/// Display method for `TLE` struct
 impl Display for TLE {
 
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
