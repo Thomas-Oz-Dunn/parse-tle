@@ -5,17 +5,23 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 
+use hifitime::prelude::*;
+
+// TODO-TD: add serde integration
+// TODO-TD: minimize memory requirements where possible
+
 #[derive(Clone, Debug)] 
 pub struct TLE {
     pub name: String,
     pub catalog_number: String,
     pub international_designator: String,
-    pub epoch_year: u32,
-    pub epoch_month: u32,
-    pub epoch_day: u32,
-    pub epoch_hours: u32,  
-    pub epoch_min: u32,
-    pub epoch_sec: u32,
+    pub epoch: Epoch,
+    pub epoch_year: i32,
+    pub epoch_month: u8,
+    pub epoch_day: u8,
+    pub epoch_hours: u8,  
+    pub epoch_min: u8,
+    pub epoch_sec: u8,
     pub mean_motion_1: f64,
     pub mean_motion_2: f64,
     pub radiation_pressure: f64,
@@ -28,14 +34,17 @@ pub struct TLE {
     pub rev_num: u32
 }
 
-
+/// From method for `TLE` struct
 impl From<&str> for TLE {
-    fn from(tle_string: &str) -> TLE {
-        return parse(tle_string);
+
+    /// From 
+    fn from(tle_str: &str) -> TLE {
+        return parse(tle_str);
     }
 }
 
 
+/// Display method for `TLE` struct
 impl Display for TLE {
 
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
@@ -57,7 +66,7 @@ impl Display for TLE {
 /// 
 /// Inputs
 /// ------
-/// tle_str : `&str` 
+/// str : `&str` 
 ///     NORAD Two Line Element Identification String
 /// 
 /// Outputs
@@ -65,9 +74,11 @@ impl Display for TLE {
 /// TLE
 ///     TLE struct
 pub fn parse(
-    tle_string: &str
+    tle_str: &str
 ) -> TLE {
-    let lines: Vec<&str> = tle_string.lines().collect();
+
+    // TODO-TD: add checks for correct formatting
+    let lines: Vec<&str> = tle_str.lines().collect();
     
     // name
     let name: &str = lines[0];
@@ -80,13 +91,13 @@ pub fn parse(
 
     let epoch_str: &str = &bind1[18..=31];
 
-    let year_endian: u32 = epoch_str[0..=1]
+    let year_endian: i32 = epoch_str[0..=1]
         .to_string()
-        .parse::<u32>()
+        .parse::<i32>()
         .unwrap();
 
     // epoch_year
-    let epoch_year: u32;
+    let epoch_year: i32;
     if year_endian < 57{
         epoch_year = 2000 + year_endian;
     } else {
@@ -103,32 +114,44 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    let month_day: (u32, u32) = calc_month_day(day_of_year, epoch_year);
+    let month_day: (u8, u8) = calc_month_day(day_of_year, epoch_year as u32);
     
-    let epoch_month: u32 = month_day.0;
-    let epoch_day: u32 = month_day.1;
+    let epoch_month: u8 = month_day.0;
+    let epoch_day: u8 = month_day.1;
 
     let percent_of_day: f64 = (".".to_owned() + epoch_day_full[1])
         .parse::<f64>()
         .unwrap();
 
     let hours_dec: f64 = percent_of_day * 24.0;
+
     // epoch_hours
-    let hours_whole: u32 = hours_dec.div_euclid(24.0).floor() as u32;
+    let hours_whole: u8 = hours_dec.div_euclid(24.0).floor() as u8;
     let hours_part: f64 = hours_dec.rem_euclid(24.0);
     let minutes_dec: f64 = hours_part * 60.;
 
     // epoch_min
-    let minutes_whole: u32 = minutes_dec.div_euclid(60.).floor() as u32;
+    let minutes_whole: u8 = minutes_dec.div_euclid(60.).floor() as u8;
     let minutes_part: f64 = minutes_dec.rem_euclid(60.);
     let seconds_dec: f64 = minutes_part * 60.;
 
     // epoch_sec
-    let seconds_whole: u32 = seconds_dec.div_euclid(60.).floor() as u32;
+    let seconds_whole: u8 = seconds_dec.div_euclid(60.).floor() as u8;
     
+    // hifitime epoch
+    let full_epoch: Epoch = Epoch::from_gregorian_hms(
+        epoch_year as i32, 
+        epoch_month, 
+        epoch_day, 
+        hours_whole, 
+        minutes_whole, 
+        seconds_whole, 
+        TimeScale::UTC
+    );
+
     // mean_motion_1
     let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[33..=33].to_string() + "1").trim().parse::<f64>().unwrap();
     let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
@@ -142,8 +165,11 @@ pub fn parse(
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_mot_2_pow: f64 = 10_f64.powf((
-        bind1[50..=51].to_string()).parse::<f64>().unwrap());
+    let mean_mot_2_exp = bind1[50..=51]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let mean_mot_2_pow: f64 = 10_f64.powf(mean_mot_2_exp);
     let mean_motion_2: f64 = (mean_mot_2_sign * mean_mot_2_base) * mean_mot_2_pow;
 
     // radiation_pressure
@@ -153,18 +179,29 @@ pub fn parse(
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let rad_press_pow: f64 = 10_f64.powf((
-        bind1[59..=60].to_string()).parse::<f64>().unwrap());
+    let rad_press_exp = bind1[59..=60]
+        .to_string()
+        .parse::<f64>()
+        .unwrap();
+    let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
     let bind2: String = lines[2].trim().to_string();
 
     // --- Angles
     // inc
-    let inc: f64 = bind2[8..=15].to_string().trim().parse::<f64>().unwrap(); 
+    let inc: f64 = bind2[8..=15]
+        .to_string()
+        .trim()
+        .parse::<f64>()
+        .unwrap(); 
     
     // raan
-    let raan: f64 = bind2[17..=24].to_string().trim().parse::<f64>().unwrap();
+    let raan: f64 = bind2[17..=24]
+        .to_string()
+        .trim()
+        .parse::<f64>()
+        .unwrap();
     
     // eccentricity
     let eccentricity: f64 = (
@@ -201,7 +238,8 @@ pub fn parse(
         name: name.trim().to_string(),
         catalog_number: catalog_number.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
-        epoch_year: epoch_year,
+        epoch: full_epoch,
+        epoch_year: epoch_year as i32,
         epoch_month: epoch_month,
         epoch_day: epoch_day,
         epoch_hours: hours_whole,
@@ -234,15 +272,15 @@ pub fn parse(
 /// 
 /// Outputs
 /// -------
-/// month: `u32`
+/// month: `u8`
 ///     Month (1-12)
 /// 
-/// day: `u32`
+/// day: `u8`
 ///     Day of month (1-31)
 pub fn calc_month_day(
     day_of_year: u32,
     year: u32
-) -> (u32, u32) {
+) -> (u8, u8) {
     assert!(day_of_year < 366, "Day of year must be less than 366"); 
 
     let feb_days: u32;
@@ -252,7 +290,7 @@ pub fn calc_month_day(
     let month_lengths: Vec<u32> = vec![
         31, feb_days, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    let mut month: u32 = 1;
+    let mut month: u8 = 1;
     let mut sum_days: u32 = month_lengths[0];
 
     while sum_days < day_of_year -  month_lengths[month as usize - 1]{
@@ -260,10 +298,10 @@ pub fn calc_month_day(
         sum_days += month_lengths[month as usize - 1];
     }
 
-    let month: u32 = month;
+    let month: u8 = month;
     let day: u32 = day_of_year - sum_days;
 
-    return (month, day);
+    return (month, day as u8);
 }
 
 
