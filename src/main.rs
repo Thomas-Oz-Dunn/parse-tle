@@ -8,7 +8,6 @@ struct CLI {
     #[arg(short, long)]
     two_line_element: Option<String>,
     
-    // Direct TLE string
     // flag w/ file path to .txt on local machine 
     // flag for celestrak mode query with key desired
     
@@ -16,16 +15,24 @@ struct CLI {
 
 fn main() {
     let cli = CLI::parse();
-    let tle_string = &cli.two_line_element;
-    // if none use
+    let tle_string: Option<String> = cli.two_line_element;
     
-    let  tle_string: &str = 
-    "ISS (ZARYA)
-    1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
-    2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
-    
-    
-    let tle: TLE = parse(tle_string);
-    print!("{}", tle);
+    if tle_string.is_some(){
+        let tle: TLE = parse(tle_string.unwrap().as_str());
+        print!("{}", tle);
+
+    }
+    else 
+    {
+        println!("No tle provided, running with demo values!!");
+        
+        let tle_str: &str = 
+        "ISS (ZARYA)
+        1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
+        2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
+        
+        let tle: TLE = parse(tle_str);
+        print!("{}", tle);
+    }
 
 }
