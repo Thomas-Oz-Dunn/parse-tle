@@ -8,6 +8,11 @@ struct CLI {
     #[arg(short, long)]
     two_line_element: Option<String>,
     
+    
+    /// path to .txt file holding tle information
+    #[arg(short, long)]
+    file_path: Option<String>,
+    
     // flag w/ file path to .txt on local machine 
     // flag for celestrak mode query with key desired
     
@@ -16,7 +21,10 @@ struct CLI {
 fn main() {
     let cli = CLI::parse();
     let tle_string: Option<String> = cli.two_line_element;
-    
+    let file_path: Option<String> = cli.file_path;
+     
+
+    // TODO-Td: make mutual exclusive
     if tle_string.is_some(){
         let tle: TLE = parse(tle_string.unwrap().as_str());
         print!("{}", tle);
