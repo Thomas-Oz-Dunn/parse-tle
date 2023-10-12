@@ -19,7 +19,7 @@ struct CLI {
 }
 
 fn main() {
-    let cli = CLI::parse();
+    let cli: CLI = CLI::parse();
     let tle_string: Option<String> = cli.two_line_element;
     let file_path: Option<String> = cli.file_path;
      
@@ -32,6 +32,13 @@ fn main() {
     }
     else 
     {
+        if file_path.is_some(){
+            // parse
+        }
+        else
+        {
+
+        
         println!("No tle provided, running with demo values!!");
         
         let tle_str: &str = 
@@ -41,6 +48,7 @@ fn main() {
         
         let tle: TLE = parse(tle_str);
         print!("{}", tle);
+        }
     }
 
 }
