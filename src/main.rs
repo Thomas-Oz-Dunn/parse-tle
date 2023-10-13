@@ -1,5 +1,11 @@
+/*
+Executable for TLE interefacing
+
+*/
+use std::fs;
 use parse_tle::tle::*;
 use clap::Parser;
+
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -23,22 +29,20 @@ fn main() {
     let tle_string: Option<String> = cli.two_line_element;
     let file_path: Option<String> = cli.file_path;
      
-
-    // TODO-Td: make mutual exclusive
     if tle_string.is_some(){
         let tle: TLE = parse(tle_string.unwrap().as_str());
         print!("{}", tle);
-
     }
-    else 
+    else if file_path.is_some()  
     {
-        if file_path.is_some(){
-            // parse
-        }
-        else
-        {
+        let contents = fs::read_to_string(file_path.unwrap().as_str()).expect("Should have been able to read the file");
 
-        
+        let tle: TLE = parse(&contents.as_str());
+        print!("{}", tle);
+    }
+    else
+    {
+
         println!("No tle provided, running with demo values!!");
         
         let tle_str: &str = 
@@ -48,7 +52,6 @@ fn main() {
         
         let tle: TLE = parse(tle_str);
         print!("{}", tle);
-        }
     }
 
 }
