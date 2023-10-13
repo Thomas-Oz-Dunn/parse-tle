@@ -47,10 +47,10 @@ impl From<&str> for TLE {
 /// Display method for `TLE` struct
 impl Display for TLE {
 
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result { 
         write!(
-            formatter, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\nargument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
+            f, 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
             self.name, self.catalog_number, self.international_designator,
             self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
             self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
@@ -76,23 +76,15 @@ impl Display for TLE {
 pub fn parse(
     tle_str: &str
 ) -> TLE {
-
-    if validate(tle_str) == false{
-        panic!("Invalid TLE")
-    }
-
-    let lines: Vec<&str> = tle_str.lines().collect();
     
-    let idx_1: usize; 
-    let idx_2: usize;
+    let lines: Vec<&str> = tle_str.lines().collect();
+    let n_lines: usize = lines.len();
 
-    if lines.len() == 3{
-        idx_1 = 1;
-        idx_2 = 2;
-    }else{
-        idx_1 = 0;
-        idx_2 = 1;
-    }
+    let (idx_1, idx_2) = match n_lines{
+        3 => (1, 2),
+        2 => (0, 1),
+        _ => panic!( "Invalid number of lines"),
+    };
 
     let bind1: String = lines[idx_1].trim().to_string();
     
@@ -233,10 +225,11 @@ pub fn parse(
     let eccentricity: f64 = (
         ".".to_owned() + &bind2[26..=32]
     ).parse::<f64>().unwrap();
-    
+
     // arg_perigee
     let arg_perigee: f64 = bind2[34..=41]
         .to_string()
+        .trim()
         .parse::<f64>()
         .unwrap();
 
@@ -260,7 +253,7 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    return TLE { 
+    let tle: TLE = TLE { 
         name: name.trim().to_string(),
         catalog_number: catalog_number.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
@@ -281,24 +274,11 @@ pub fn parse(
         mean_anomaly: mean_anomaly,
         mean_motion: mean_motion,
         rev_num: rev_num
-    }
+    };
 
+    return tle
 }
 
-/// Validate TLE formatting 
-pub fn validate(
-    tle_str: &str
-) -> bool {
-    let lines: Vec<&str> = tle_str.lines().collect();
-    if lines.len() != 3{
-        return false
-    }
-
-    // TODO-TD: allow two liner
-
-    // TODO-TD: checksum
-    return true
-}
 
 /// Convert day of year, year to month, day
 /// 
