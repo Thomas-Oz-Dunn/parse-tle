@@ -77,17 +77,37 @@ pub fn parse(
     tle_str: &str
 ) -> TLE {
 
-    // TODO-TD: add checks for correct formatting
+    if validate(tle_str) == false{
+        panic!("Invalid TLE")
+    }
+
     let lines: Vec<&str> = tle_str.lines().collect();
     
-    // name
-    let name: &str = lines[0];
-    let bind1: String = lines[1].trim().to_string();
+    let idx_1: usize; 
+    let idx_2: usize;
+
+    if lines.len() == 3{
+        idx_1 = 1;
+        idx_2 = 2;
+    }else{
+        idx_1 = 0;
+        idx_2 = 1;
+    }
+
+    let bind1: String = lines[idx_1].trim().to_string();
     
     // catalog_number
     let catalog_number: &str = &bind1[2..=7];
     
     let intnl_desig: &str = &bind1[9..=16];
+
+    // name
+    let name: &str;
+    if lines.len() == 3{
+        name = lines[0];
+    } else {
+        name = intnl_desig
+    }
 
     let epoch_str: &str = &bind1[18..=31];
 
@@ -114,7 +134,10 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    let month_day: (u8, u8) = calc_month_day(day_of_year, epoch_year as u32);
+    let month_day: (u8, u8) = calc_month_day(
+        day_of_year, 
+        epoch_year as u32
+    );
     
     let epoch_month: u8 = month_day.0;
     let epoch_day: u8 = month_day.1;
@@ -151,7 +174,8 @@ pub fn parse(
 
     // mean_motion_1
     let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() + "1").trim().parse::<f64>().unwrap();
+        bind1[33..=33].to_string() + "1"
+    ).trim().parse::<f64>().unwrap();
     let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
@@ -160,7 +184,8 @@ pub fn parse(
 
     // mean_motion_2
     let mean_mot_2_sign: f64 = (
-        bind1[44..=44].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[44..=44].to_string() +  "1"
+    ).trim().parse::<f64>().unwrap();
     let mean_mot_2_base: f64 = bind1[45..=49]
         .to_string()
         .parse::<f64>()
@@ -174,7 +199,8 @@ pub fn parse(
 
     // radiation_pressure
     let rad_press_sign: f64 = (
-        bind1[53..=53].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[53..=53].to_string() +  "1"
+    ).trim().parse::<f64>().unwrap();
     let rad_press_base: f64 = bind1[54..=58]
         .to_string()
         .parse::<f64>()
@@ -186,7 +212,7 @@ pub fn parse(
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
-    let bind2: String = lines[2].trim().to_string();
+    let bind2: String = lines[idx_2].trim().to_string();
 
     // --- Angles
     // inc
@@ -259,6 +285,20 @@ pub fn parse(
 
 }
 
+/// Validate TLE formatting 
+pub fn validate(
+    tle_str: &str
+) -> bool {
+    let lines: Vec<&str> = tle_str.lines().collect();
+    if lines.len() != 3{
+        return false
+    }
+
+    // TODO-TD: allow two liner
+
+    // TODO-TD: checksum
+    return true
+}
 
 /// Convert day of year, year to month, day
 /// 
