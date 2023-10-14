@@ -86,6 +86,7 @@ pub fn parse(
         _ => panic!( "Invalid number of lines"),
     };
 
+    // TODO-TD: add checksum
     let bind1: String = lines[idx_1].trim().to_string();
     
     // catalog_number
@@ -204,6 +205,7 @@ pub fn parse(
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
+    // TODO-TD: add checksum
     let bind2: String = lines[idx_2].trim().to_string();
 
     // --- Angles
@@ -370,9 +372,10 @@ mod tle_tests {
 
     #[test]
     fn test_parser(){
-        let sample_tle = "CHANDRAYAAN-3      
-            1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
-            2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
+        let sample_tle: &str = 
+        "CHANDRAYAAN-3      
+        1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+        2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
         let chandrayaan_3: TLE = parse(sample_tle);
 
