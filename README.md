@@ -12,5 +12,8 @@ cargo install parse-tle
 or add to your `cargo.toml`:
 ```
 [dependencies]
-parse-tle = "0.1.2"
+parse-tle = "0.1.3"
 ```
+
+Usage
+-----

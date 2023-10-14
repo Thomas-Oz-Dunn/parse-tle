@@ -47,10 +47,10 @@ impl From<&str> for TLE {
 /// Display method for `TLE` struct
 impl Display for TLE {
 
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result { 
         write!(
-            formatter, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\ninclination: {}\nraan: {}\neccentricity: {}\nargument of perigee: {}\nmean anomaly: {}\nRevolution #: {}", 
+            f, 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
             self.name, self.catalog_number, self.international_designator,
             self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
             self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
@@ -76,18 +76,31 @@ impl Display for TLE {
 pub fn parse(
     tle_str: &str
 ) -> TLE {
-
-    // TODO-TD: add checks for correct formatting
-    let lines: Vec<&str> = tle_str.lines().collect();
     
-    // name
-    let name: &str = lines[0];
-    let bind1: String = lines[1].trim().to_string();
+    let lines: Vec<&str> = tle_str.lines().collect();
+    let n_lines: usize = lines.len();
+
+    let (idx_1, idx_2) = match n_lines{
+        3 => (1, 2),
+        2 => (0, 1),
+        _ => panic!( "Invalid number of lines"),
+    };
+
+    // TODO-TD: add checksum
+    let bind1: String = lines[idx_1].trim().to_string();
     
     // catalog_number
     let catalog_number: &str = &bind1[2..=7];
     
     let intnl_desig: &str = &bind1[9..=16];
+
+    // name
+    let name: &str;
+    if lines.len() == 3{
+        name = lines[0];
+    } else {
+        name = intnl_desig
+    }
 
     let epoch_str: &str = &bind1[18..=31];
 
@@ -114,7 +127,10 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    let month_day: (u8, u8) = calc_month_day(day_of_year, epoch_year as u32);
+    let month_day: (u8, u8) = calc_month_day(
+        day_of_year, 
+        epoch_year as u32
+    );
     
     let epoch_month: u8 = month_day.0;
     let epoch_day: u8 = month_day.1;
@@ -151,7 +167,8 @@ pub fn parse(
 
     // mean_motion_1
     let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() + "1").trim().parse::<f64>().unwrap();
+        bind1[33..=33].to_string() + "1"
+    ).trim().parse::<f64>().unwrap();
     let mean_motion_1_base: f64 = bind1[34..=42]
         .to_string()
         .parse::<f64>()
@@ -160,7 +177,8 @@ pub fn parse(
 
     // mean_motion_2
     let mean_mot_2_sign: f64 = (
-        bind1[44..=44].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[44..=44].to_string() +  "1"
+    ).trim().parse::<f64>().unwrap();
     let mean_mot_2_base: f64 = bind1[45..=49]
         .to_string()
         .parse::<f64>()
@@ -174,7 +192,8 @@ pub fn parse(
 
     // radiation_pressure
     let rad_press_sign: f64 = (
-        bind1[53..=53].to_string() +  "1").trim().parse::<f64>().unwrap();
+        bind1[53..=53].to_string() +  "1"
+    ).trim().parse::<f64>().unwrap();
     let rad_press_base: f64 = bind1[54..=58]
         .to_string()
         .parse::<f64>()
@@ -186,7 +205,8 @@ pub fn parse(
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
-    let bind2: String = lines[2].trim().to_string();
+    // TODO-TD: add checksum
+    let bind2: String = lines[idx_2].trim().to_string();
 
     // --- Angles
     // inc
@@ -207,10 +227,11 @@ pub fn parse(
     let eccentricity: f64 = (
         ".".to_owned() + &bind2[26..=32]
     ).parse::<f64>().unwrap();
-    
+
     // arg_perigee
     let arg_perigee: f64 = bind2[34..=41]
         .to_string()
+        .trim()
         .parse::<f64>()
         .unwrap();
 
@@ -234,7 +255,7 @@ pub fn parse(
         .parse::<u32>()
         .unwrap();
 
-    return TLE { 
+    let tle: TLE = TLE { 
         name: name.trim().to_string(),
         catalog_number: catalog_number.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
@@ -255,8 +276,9 @@ pub fn parse(
         mean_anomaly: mean_anomaly,
         mean_motion: mean_motion,
         rev_num: rev_num
-    }
+    };
 
+    return tle
 }
 
 
@@ -350,9 +372,10 @@ mod tle_tests {
 
     #[test]
     fn test_parser(){
-        let sample_tle = "CHANDRAYAAN-3      
-            1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
-            2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
+        let sample_tle: &str = 
+        "CHANDRAYAAN-3      
+        1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+        2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
         let chandrayaan_3: TLE = parse(sample_tle);
 
