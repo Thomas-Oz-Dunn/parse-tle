@@ -80,15 +80,18 @@ pub fn parse(
     let lines: Vec<&str> = tle_str.lines().collect();
     let n_lines: usize = lines.len();
 
+    // TODO-TD: refactor error handling to Result instead of panic!
     let (idx_1, idx_2) = match n_lines{
         3 => (1, 2),
         2 => (0, 1),
         _ => panic!( "Invalid number of lines"),
     };
 
-    // TODO-TD: add checksum
     let bind1: String = lines[idx_1].trim().to_string();
-    
+    if checksum(&bind1) == false {
+        panic!( "Checksum failed line 1")
+    };
+ 
     // catalog_number
     let catalog_number: &str = &bind1[2..=7];
     
@@ -205,8 +208,11 @@ pub fn parse(
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
-    // TODO-TD: add checksum
     let bind2: String = lines[idx_2].trim().to_string();
+    if checksum(&bind2) == false {
+        panic!( "Checksum failed line 2")
+    };
+ 
 
     // --- Angles
     // inc
@@ -281,6 +287,38 @@ pub fn parse(
     return tle
 }
 
+/// Perform Checksum on line
+/// 
+/// Inputs
+/// ------
+/// line: &str
+///     
+pub fn checksum(
+    line: &str
+) -> bool {
+    
+    let chesum: u32 = line[69..=69]
+        .to_string()
+        .parse::<u32>()
+        .unwrap(); 
+
+    let mut sum: u32 = 0;
+
+    for char in line[..=68].chars(){
+
+        if char == '-'{
+            // One is added to the checksum for each negative sign (-) on that line
+            sum += 1
+        }
+        else if char.is_numeric()
+        {
+            // Adding all numerical digits on that line, including the line number. 
+            sum += char.to_digit(10).unwrap()
+        }
+    }
+
+    return sum.rem_euclid(10) == chesum
+}
 
 /// Convert day of year, year to month, day
 /// 
