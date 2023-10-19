@@ -88,6 +88,10 @@ pub fn parse(
     };
 
     let bind1: String = lines[idx_1].trim().to_string();
+    if bind1.chars().count() != 69 {
+        panic!( "Improper line length")
+    }
+    
     if checksum(&bind1) == false {
         panic!( "Checksum failed line 1")
     };
@@ -194,7 +198,7 @@ pub fn parse(
     let mean_motion_2: f64 = (mean_mot_2_sign * mean_mot_2_base) * mean_mot_2_pow;
 
     // radiation_pressure
-    let rad_press_sign: f64 = (
+    let rad_press_sign: f64 = ( 
         bind1[53..=53].to_string() +  "1"
     ).trim().parse::<f64>().unwrap();
     let rad_press_base: f64 = bind1[54..=58]
@@ -297,14 +301,15 @@ pub fn checksum(
     line: &str
 ) -> bool {
     
-    let chesum: u32 = line[69..=69]
+    print!("{}", line[69..].to_string());
+    let chesum: u32 = line[..69]
         .to_string()
         .parse::<u32>()
         .unwrap(); 
 
     let mut sum: u32 = 0;
 
-    for char in line[..=68].chars(){
+    for char in line[..=69].chars(){
 
         if char == '-'{
             // One is added to the checksum for each negative sign (-) on that line
