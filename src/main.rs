@@ -71,7 +71,7 @@ fn main() {
     let tle_string: Option<String> = cli.two_line_element;
     let verbose: bool = cli.verbose;
     let file_path: Option<String> = cli.file_path;
-    let command = cli.command;
+    let command: Option<Commands> = cli.command;
      
     if tle_string.is_some(){
         let tle: TLE = parse(tle_string.unwrap().as_str());
@@ -96,13 +96,12 @@ fn main() {
     else if command.is_some() 
     {
         // TODO-TD: replace elifs with match
-        let mut url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned();
-
         let (query, value) = match command.unwrap(){
             Commands::Celestrak(celestrak_args) => (
                 celestrak_args.query, celestrak_args.name),
         };
 
+        let mut url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned();
         url.push_str(query.as_str());
         url.push_str("=");
         url.push_str(value.as_str());

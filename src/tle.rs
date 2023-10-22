@@ -88,6 +88,7 @@ pub fn parse(
     };
 
     let bind1: String = lines[idx_1].trim().to_string();
+    
     if bind1.chars().count() != 69 {
         panic!( "Improper line length")
     }
@@ -291,25 +292,29 @@ pub fn parse(
     return tle
 }
 
-/// Perform Checksum on line
+/// Perform Checksum on line based on TLE standard
 /// 
 /// Inputs
 /// ------
-/// line: &str
-///     
+/// line: `&str`
+///     TLE line with parameters
+/// 
+/// Outputs
+/// -------
+/// is_valid: `bool`
+///    True if checksum passes
 pub fn checksum(
     line: &str
 ) -> bool {
     
-    print!("{}", line[69..].to_string());
-    let chesum: u32 = line[..69]
+    let checksum: u32 = line[68..]
         .to_string()
         .parse::<u32>()
         .unwrap(); 
 
     let mut sum: u32 = 0;
 
-    for char in line[..=69].chars(){
+    for char in line[..68].chars(){
 
         if char == '-'{
             // One is added to the checksum for each negative sign (-) on that line
@@ -322,7 +327,7 @@ pub fn checksum(
         }
     }
 
-    return sum.rem_euclid(10) == chesum
+    return sum.rem_euclid(10) == checksum
 }
 
 /// Convert day of year, year to month, day
