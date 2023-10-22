@@ -675,7 +675,7 @@ dependencies = [
 
 [[package]]
 name = "parse-tle"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "clap",
  "error-chain",
