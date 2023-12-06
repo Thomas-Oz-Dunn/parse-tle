@@ -2,10 +2,10 @@
 Executable for TLE interefacing
 
 */
-use std::fs;
+use std::fs::File;
+use std::io::{BufWriter, Read, Write};
 use clap::{Parser, Subcommand, Args};
 use error_chain::error_chain;
-use std::io::Read;
 
 use parse_tle::tle::*;
 
@@ -35,6 +35,9 @@ struct CLI {
     #[command(subcommand)]
     command: Option<Commands>,
     
+    /// Path to write json formatted output
+    #[arg(short, long)]
+    output_path: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -71,6 +74,7 @@ fn main() {
     let tle_string: Option<String> = cli.two_line_element;
     let verbose: bool = cli.verbose;
     let file_path: Option<String> = cli.file_path;
+    let output_path: Option<String> = cli.output_path;
     let command = cli.command;
      
     if tle_string.is_some(){
@@ -89,7 +93,6 @@ fn main() {
         }
         
         // TODO-TD: handle file with multiple TLEs
-
         let tle: TLE = parse(&contents.as_str());
         println!("{}", tle);
     }
@@ -137,6 +140,9 @@ fn main() {
         
         let tle: TLE = parse(tle_str);
         println!("\n{}", tle);
+        if output_path.is_some(){
+            write_json(tle, output_path.unwrap().as_str());
+        }
     }
 
 }
