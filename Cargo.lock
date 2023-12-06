@@ -681,6 +681,8 @@ dependencies = [
  "error-chain",
  "hifitime",
  "reqwest",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

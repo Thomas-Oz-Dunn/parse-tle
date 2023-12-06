@@ -3,9 +3,9 @@ Executable for TLE interefacing
 
 */
 use std::fs;
+use std::io::Read;
 use clap::{Parser, Subcommand, Args};
 use error_chain::error_chain;
-use std::io::Read;
 
 use parse_tle::tle::*;
 
@@ -27,14 +27,17 @@ struct CLI {
     /// Two line element directly in cli
     two_line_element: Option<String>,
     
-    /// path to .txt file holding tle information
+    /// Path to .txt file holding tle information
     #[arg(short, long)]
     file_path: Option<String>,
     
-    /// flag for celestrak mode query with key desired
+    /// Flag for celestrak mode query with key desired
     #[command(subcommand)]
     command: Option<Commands>,
     
+    /// Path to write json formatted output
+    #[arg(short, long)]
+    output_path: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -71,7 +74,8 @@ fn main() {
     let tle_string: Option<String> = cli.two_line_element;
     let verbose: bool = cli.verbose;
     let file_path: Option<String> = cli.file_path;
-    let command = cli.command;
+    let output_path: Option<String> = cli.output_path;
+    let command: Option<Commands> = cli.command;
      
     if tle_string.is_some(){
         let tle: TLE = parse(tle_string.unwrap().as_str());
@@ -89,9 +93,15 @@ fn main() {
         }
         
         // TODO-TD: handle file with multiple TLEs
-
         let tle: TLE = parse(&contents.as_str());
+        let name: String = tle.name.clone();
         println!("{}", tle);
+        
+        if output_path.is_some(){
+            let file_path: String = output_path.unwrap();
+            write_json(tle, &file_path);
+            println!("Wrote tle for {} in json format to: {}", name, file_path);
+        }
     }
     else if command.is_some() 
     {
@@ -122,8 +132,14 @@ fn main() {
         }
 
         let tle: TLE = parse(&body.as_str());
+        let name: String = tle.name.clone();
         println!("{}", tle);
 
+        if output_path.is_some(){
+            let file_path: String = output_path.unwrap();
+            write_json(tle, &file_path);
+            println!("Wrote tle for {} in json format to: {}", name, file_path);
+        }
     }
     else
     {
@@ -136,7 +152,14 @@ fn main() {
         2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
         
         let tle: TLE = parse(tle_str);
+        let name: String = tle.name.clone();
         println!("\n{}", tle);
+
+        if output_path.is_some(){
+            let file_path: String = output_path.unwrap();
+            write_json(tle, &file_path);
+            println!("Wrote tle for {} in json format to: {}", name, file_path);
+        }
     }
 
 }

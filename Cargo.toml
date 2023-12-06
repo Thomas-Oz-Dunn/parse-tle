@@ -8,6 +8,8 @@ keywords = ["astrodynamics", "astronomy", "satellites"]
 repository = "https://github.com/Thomas-Oz-Dunn/parse-tle"
 
 [dependencies]
+serde =  { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 clap = { version = "4.4.6", features = ["derive"] }
 error-chain = "0.12.4"
 hifitime = "3.8.4"

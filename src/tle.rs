@@ -1,27 +1,23 @@
 /*
 Parser for TLE
 */
-
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use serde::Serialize;
 
 use hifitime::prelude::*;
-
-// TODO-TD: add serde integration
 // TODO-TD: minimize memory requirements where possible
+// TODO-TD: read from json file
 
-#[derive(Clone, Debug)] 
+
+#[derive(Clone, Debug, Serialize)] 
 pub struct TLE {
     pub name: String,
     pub catalog_number: String,
     pub international_designator: String,
     pub epoch: Epoch,
-    pub epoch_year: i32,
-    pub epoch_month: u8,
-    pub epoch_day: u8,
-    pub epoch_hours: u8,  
-    pub epoch_min: u8,
-    pub epoch_sec: u8,
     pub mean_motion_1: f64,
     pub mean_motion_2: f64,
     pub radiation_pressure: f64,
@@ -43,17 +39,32 @@ impl From<&str> for TLE {
     }
 }
 
+/// Write TLE struct to JSON formatted file
+/// 
+/// Inputs
+/// ------
+/// tle: `TLE`
+///     tle struct
+/// 
+/// path_str: `&String`
+///     Path to write to
+/// 
+pub fn write_json(tle: TLE, path_str: &String){
+    let file = File::create(path_str).unwrap();
+    let mut writer = BufWriter::new(file);
+    serde_json::to_writer(&mut writer, &tle).unwrap();
+    writer.flush().unwrap();
+}
 
 /// Display method for `TLE` struct
 impl Display for TLE {
 
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result { 
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
         write!(
-            f, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}/{}/{} {}:{} {}s\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
+            formatter, 
+            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
             self.name, self.catalog_number, self.international_designator,
-            self.epoch_year, self.epoch_month, self.epoch_day, self.epoch_hours,
-            self.epoch_min, self.epoch_sec, self.mean_motion, self.mean_motion_1,
+            self.epoch, self.mean_motion, self.mean_motion_1,
             self.mean_motion_2, self.radiation_pressure, self.inc, self.raan, 
             self.eccentricity, self.arg_perigee, self.mean_anomaly, self.rev_num
         )
@@ -71,7 +82,7 @@ impl Display for TLE {
 /// 
 /// Outputs
 /// -------
-/// TLE
+/// tle: `TLE`
 ///     TLE struct
 pub fn parse(
     tle_str: &str
@@ -260,12 +271,6 @@ pub fn parse(
         catalog_number: catalog_number.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
         epoch: full_epoch,
-        epoch_year: epoch_year as i32,
-        epoch_month: epoch_month,
-        epoch_day: epoch_day,
-        epoch_hours: hours_whole,
-        epoch_min: minutes_whole,
-        epoch_sec: seconds_whole,
         mean_motion_1: mean_motion_1,
         mean_motion_2: mean_motion_2,
         radiation_pressure: radiation_pressure,
@@ -380,8 +385,6 @@ mod tle_tests {
         let chandrayaan_3: TLE = parse(sample_tle);
 
         assert_eq!(chandrayaan_3.name, "CHANDRAYAAN-3".to_string());
-
-        assert_eq!(chandrayaan_3.epoch_year, 2023);
 
         assert_eq!(chandrayaan_3.inc, 21.3360);
 
