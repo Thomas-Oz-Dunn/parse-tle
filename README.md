@@ -56,10 +56,11 @@ Arguments:
   [TWO_LINE_ELEMENT]  Two line element directly in cli
 
 Options:
-  -v, --verbose                Verbose printing
-  -f, --file-path <FILE_PATH>  path to .txt file holding tle information
-  -h, --help                   Print help
-  -V, --version                Print version
+  -v, --verbose                    Verbose printing
+  -f, --file-path <FILE_PATH>      path to .txt file holding tle information
+  -o, --output-path <OUTPUT_PATH>  Path to write json formatted output
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 To run an example of reading from file:
