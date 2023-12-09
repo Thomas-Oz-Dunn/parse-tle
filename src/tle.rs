@@ -12,7 +12,7 @@ use hifitime::prelude::*;
 // TODO-TD: read from json file
 
 
-#[derive(Clone, Debug, Serialize)] 
+#[derive(Clone, Debug, Serialize, Deserialize)] 
 pub struct TLE {
     pub name: String,
     pub catalog_number: String,
@@ -56,9 +56,15 @@ pub fn write_json(tle: TLE, path_str: &String){
     writer.flush().unwrap();
 }
 
-pub fn read_json(path_str: &String) -> TLE {
-    let f: File = File::open(path_str).unwrap();
-    let reader: BufReader<File> = BufReader::new(f);
+/// Read TLE struct from JSON formatted file
+///
+/// 
+pub fn read_json(path_str: &str) -> TLE {
+    let mut file: File = File::open(path_str).expect(format!("{path_str} could not be openned").as_str());
+    let mut data: String = String::new();
+    file.read_to_string(&mut data).expect(format!("{path_str} could not be read").as_str());
+    let json_values: TLE = serde_json::from_str(&data).expect("JSON was not well-formatted");
+    return json_values
 }
 
 /// Display method for `TLE` struct

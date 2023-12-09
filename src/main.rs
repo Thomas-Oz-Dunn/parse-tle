@@ -71,65 +71,67 @@ struct CelestrakArgs {
 
 fn main() {
     let cli: CLI = CLI::parse();
-    let tle_string: Option<String> = cli.two_line_element;
     let verbose: bool = cli.verbose;
-    let file_path: Option<String> = cli.file_path;
+    let tle_string_option: Option<String> = cli.two_line_element;
+    let file_path_option: Option<String> = cli.file_path;
     let output_path_option: Option<String> = cli.output_path;
-    let command: Option<Commands> = cli.command;
+    let command_option: Option<Commands> = cli.command;
 
     let default_str: &str = 
     "ISS (ZARYA)
     1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
     2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
-    let default_tle: TLE = parse(default_str);
-    let mut tles: Vec<TLE> = vec![default_tle];
-
-    let mut is_write: bool = false;
-    let mut output_path: String = "./".to_string();
-
-    if tle_string.is_some(){
-        tles[0] = parse(tle_string.unwrap().as_str());
+    let mut tles: Vec<TLE> = vec![parse(default_str)];
+    
+    if tle_string_option.is_some(){
+        tles[0] = parse(tle_string_option.unwrap().as_str());
     }
-    else if file_path.is_some()  
+    else if file_path_option.is_some()  
     {
-        // TODO-TD: Check if json
-        let contents: String = fs::read_to_string(
-            file_path.unwrap().as_str())
-        .expect("Should have been able to read the file");
+        let file: String = file_path_option.unwrap();
 
-        if verbose {
-            println!("File contents:\n{}", contents);
-        }
-
-        let lines: Vec<&str> = contents.lines().collect();
-        let n_lines: usize = lines.len();
-        if n_lines < 3 {
-
-            tles[0] = parse(&contents.as_str());
+        if file.contains(".json") {
+            tles[0] = read_json(&file.as_str());
 
         } else {
-            let n_tles: usize = n_lines / 3;
-            let file_str: &str = &contents.as_str();
-            let tle_lines: Vec<&str> = file_str.lines().collect();
 
-            for i_tle in 0..n_tles{
-
-                let line1: &str = tle_lines[3*i_tle];
-                let line2: &str = tle_lines[3*i_tle + 1];
-                let line3: &str = tle_lines[3*i_tle + 2];
-
-                let together: String = format!("{line1}\n{line2}\n{line3}\n");
-                tles[i_tle] = parse(together.as_str());
+            let contents: String = fs::read_to_string(file.as_str())
+            .expect("Should have been able to read the file");
+    
+            if verbose {
+                println!("File contents:\n{}", contents);
             }
-        };
+    
+            let lines: Vec<&str> = contents.lines().collect();
+            let n_lines: usize = lines.len();
+            if n_lines < 3 {
+
+                tles[0] = parse(&contents.as_str());
+
+            } else {
+                let n_tles: usize = n_lines / 3;
+                let file_str: &str = &contents.as_str();
+                let tle_lines: Vec<&str> = file_str.lines().collect();
+    
+                for i_tle in 0..n_tles{
+    
+                    let line1: &str = tle_lines[3*i_tle];
+                    let line2: &str = tle_lines[3*i_tle + 1];
+                    let line3: &str = tle_lines[3*i_tle + 2];
+    
+                    let together: String = format!("{line1}\n{line2}\n{line3}\n");
+                    tles[i_tle] = parse(together.as_str());
+                }
+            };
+        }
 
     }
-    else if command.is_some() 
+    else if command_option.is_some() 
     {
         // TODO-TD: replace elifs with match
         let mut url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned();
 
-        let (query, value) = match command.unwrap(){
+        let (query, value) = match command_option.unwrap(){
             Commands::Celestrak(celestrak_args) => (
                 celestrak_args.query, celestrak_args.name),
         };
@@ -159,9 +161,14 @@ fn main() {
         println!("\nNo tle provided, running with demo values!!");
     }
 
+    let is_write: bool;
+    let mut output_path: String = "./".to_string();
+
     if output_path_option.is_some(){
         output_path = output_path_option.unwrap();
         is_write = true;
+    } else {
+        is_write = false
     }
 
     for tle in tles{
