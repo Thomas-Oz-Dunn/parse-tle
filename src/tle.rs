@@ -77,7 +77,7 @@ impl Display for TLE {
 /// 
 /// Inputs
 /// ------
-/// str : `&str` 
+/// tle_str : `&str` 
 ///     NORAD Two Line Element Identification String
 /// 
 /// Outputs
