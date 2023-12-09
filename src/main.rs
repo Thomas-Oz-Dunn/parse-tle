@@ -171,9 +171,12 @@ fn main() {
 
         if is_write{
             let name: String = tle.name.clone();               
-            let together: String = format!("{output_path}\\{name}");
-            write_json(tle, &together);
-            println!("Wrote tle for {} in json format to: {}", name, output_path);
+            let file_path: String = format!("{output_path}\\{name}.json");
+            write_json(tle, &file_path);
+            
+            if verbose {
+                println!("Wrote tle for {} in json format to: {}", name, file_path);
+            }
         }
     }
 
