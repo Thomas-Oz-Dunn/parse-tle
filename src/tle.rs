@@ -4,8 +4,8 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::fs::File;
-use std::io::{BufWriter, Write};
-use serde::Serialize;
+use std::io::{BufWriter, Write, Read, BufReader};
+use serde::{Serialize, Deserialize};
 
 use hifitime::prelude::*;
 // TODO-TD: minimize memory requirements where possible
@@ -50,10 +50,15 @@ impl From<&str> for TLE {
 ///     Path to write to
 /// 
 pub fn write_json(tle: TLE, path_str: &String){
-    let file = File::create(path_str).unwrap();
-    let mut writer = BufWriter::new(file);
+    let file: File = File::create(path_str).unwrap();
+    let mut writer: BufWriter<File> = BufWriter::new(file);
     serde_json::to_writer(&mut writer, &tle).unwrap();
     writer.flush().unwrap();
+}
+
+pub fn read_json(path_str: &String) -> TLE {
+    let f: File = File::open(path_str).unwrap();
+    let reader: BufReader<File> = BufReader::new(f);
 }
 
 /// Display method for `TLE` struct
@@ -63,10 +68,20 @@ impl Display for TLE {
         write!(
             formatter, 
             "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
-            self.name, self.catalog_number, self.international_designator,
-            self.epoch, self.mean_motion, self.mean_motion_1,
-            self.mean_motion_2, self.radiation_pressure, self.inc, self.raan, 
-            self.eccentricity, self.arg_perigee, self.mean_anomaly, self.rev_num
+            self.name, 
+            self.catalog_number, 
+            self.international_designator,
+            self.epoch, 
+            self.mean_motion, 
+            self.mean_motion_1,
+            self.mean_motion_2, 
+            self.radiation_pressure, 
+            self.inc, 
+            self.raan, 
+            self.eccentricity, 
+            self.arg_perigee, 
+            self.mean_anomaly, 
+            self.rev_num
         )
 
     }
@@ -284,6 +299,17 @@ pub fn parse(
     };
 
     return tle
+}
+
+
+/// Checksum
+pub fn checksum(line: &str){
+    // Length
+    // Final
+
+    // Component Sum
+
+    // Is equal?
 }
 
 
