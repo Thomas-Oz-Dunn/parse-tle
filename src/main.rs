@@ -171,7 +171,7 @@ fn main() {
         is_write = false
     }
 
-    for tle in tles{
+    for tle in &tles{
         if verbose {
             println!("\n{}", tle);
         }

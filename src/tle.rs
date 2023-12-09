@@ -4,13 +4,11 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::fs::File;
-use std::io::{BufWriter, Write, Read, BufReader};
+use std::io::{BufWriter, Write, Read};
 use serde::{Serialize, Deserialize};
 
 use hifitime::prelude::*;
 // TODO-TD: minimize memory requirements where possible
-// TODO-TD: read from json file
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)] 
 pub struct TLE {
@@ -49,22 +47,36 @@ impl From<&str> for TLE {
 /// path_str: `&String`
 ///     Path to write to
 /// 
-pub fn write_json(tle: TLE, path_str: &String){
+pub fn write_json(tle: &TLE, path_str: &String){
     let file: File = File::create(path_str).unwrap();
     let mut writer: BufWriter<File> = BufWriter::new(file);
-    serde_json::to_writer(&mut writer, &tle).unwrap();
+    serde_json::to_writer(&mut writer, tle).unwrap();
     writer.flush().unwrap();
 }
 
 /// Read TLE struct from JSON formatted file
 ///
+/// Inputs
+/// ------
+/// json_str: `&str`
+///     File containing json data
 /// 
-pub fn read_json(path_str: &str) -> TLE {
-    let mut file: File = File::open(path_str).expect(format!("{path_str} could not be openned").as_str());
+/// Outputs
+/// -------
+/// tle_values: `TLE`
+pub fn read_json(
+    json_path: &str
+) -> TLE {
+    let mut file: File = File::open(json_path)
+        .expect(format!("{json_path} could not be openned").as_str());
+
     let mut data: String = String::new();
-    file.read_to_string(&mut data).expect(format!("{path_str} could not be read").as_str());
-    let json_values: TLE = serde_json::from_str(&data).expect("JSON was not well-formatted");
-    return json_values
+    file.read_to_string(&mut data)
+        .expect(format!("{json_path} could not be read").as_str());
+
+    let tle_values: TLE = serde_json::from_str(&data)
+        .expect("JSON was not well-formatted");
+    return tle_values
 }
 
 /// Display method for `TLE` struct
@@ -306,18 +318,6 @@ pub fn parse(
 
     return tle
 }
-
-
-/// Checksum
-pub fn checksum(line: &str){
-    // Length
-    // Final
-
-    // Component Sum
-
-    // Is equal?
-}
-
 
 /// Convert day of year, year to month, day
 /// 
