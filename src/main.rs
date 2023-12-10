@@ -177,8 +177,17 @@ fn main() {
         }
 
         if is_write{
-            let name: String = tle.name.clone();               
-            let file_path: String = format!("{output_path}\\{name}.json");
+            let name: String = tle.name.clone();  
+            let file_path: String;
+
+            if output_path.contains(".json"){
+                file_path = output_path.clone();
+
+            } else {
+                file_path = format!("{output_path}/{name}.json");
+
+            }
+
             write_json(tle, &file_path);
             
             if verbose {
