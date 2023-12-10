@@ -71,44 +71,67 @@ struct CelestrakArgs {
 
 fn main() {
     let cli: CLI = CLI::parse();
-    let tle_string: Option<String> = cli.two_line_element;
     let verbose: bool = cli.verbose;
-    let file_path: Option<String> = cli.file_path;
-    let output_path: Option<String> = cli.output_path;
-    let command: Option<Commands> = cli.command;
-     
-    if tle_string.is_some(){
-        let tle: TLE = parse(tle_string.unwrap().as_str());
-        println!("{}", tle);
-    }
-    else if file_path.is_some()  
-    {
-        
-        let contents: String = fs::read_to_string(
-            file_path.unwrap().as_str())
-        .expect("Should have been able to read the file");
+    let tle_string_option: Option<String> = cli.two_line_element;
+    let file_path_option: Option<String> = cli.file_path;
+    let output_path_option: Option<String> = cli.output_path;
+    let command_option: Option<Commands> = cli.command;
 
-        if verbose {
-            println!("File contents:\n{}", contents);
-        }
-        
-        // TODO-TD: handle file with multiple TLEs
-        let tle: TLE = parse(&contents.as_str());
-        let name: String = tle.name.clone();
-        println!("{}", tle);
-        
-        if output_path.is_some(){
-            let file_path: String = output_path.unwrap();
-            write_json(tle, &file_path);
-            println!("Wrote tle for {} in json format to: {}", name, file_path);
-        }
+    let default_str: &str = 
+    "ISS (ZARYA)
+    1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
+    2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
+    let mut tles: Vec<TLE> = vec![parse(default_str)];
+    
+    if tle_string_option.is_some(){
+        tles[0] = parse(tle_string_option.unwrap().as_str());
     }
-    else if command.is_some() 
+    else if file_path_option.is_some()  
+    {
+        let file: String = file_path_option.unwrap();
+
+        if file.contains(".json") {
+            tles[0] = read_json(&file.as_str());
+
+        } else {
+
+            let contents: String = fs::read_to_string(file.as_str())
+            .expect("Should have been able to read the file");
+    
+            if verbose {
+                println!("File contents:\n{}", contents);
+            }
+    
+            let lines: Vec<&str> = contents.lines().collect();
+            let n_lines: usize = lines.len();
+            if n_lines < 3 {
+
+                tles[0] = parse(&contents.as_str());
+
+            } else {
+                let n_tles: usize = n_lines / 3;
+                let file_str: &str = &contents.as_str();
+                let tle_lines: Vec<&str> = file_str.lines().collect();
+    
+                for i_tle in 0..n_tles{
+    
+                    let line1: &str = tle_lines[3*i_tle];
+                    let line2: &str = tle_lines[3*i_tle + 1];
+                    let line3: &str = tle_lines[3*i_tle + 2];
+    
+                    let together: String = format!("{line1}\n{line2}\n{line3}\n");
+                    tles[i_tle] = parse(together.as_str());
+                }
+            };
+        }
+
+    }
+    else if command_option.is_some() 
     {
         // TODO-TD: replace elifs with match
         let mut url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned();
 
-        let (query, value) = match command.unwrap(){
+        let (query, value) = match command_option.unwrap(){
             Commands::Celestrak(celestrak_args) => (
                 celestrak_args.query, celestrak_args.name),
         };
@@ -131,34 +154,45 @@ fn main() {
             println!("\n Site Body:\n{}", body);
         }
 
-        let tle: TLE = parse(&body.as_str());
-        let name: String = tle.name.clone();
-        println!("{}", tle);
-
-        if output_path.is_some(){
-            let file_path: String = output_path.unwrap();
-            write_json(tle, &file_path);
-            println!("Wrote tle for {} in json format to: {}", name, file_path);
-        }
+        tles[0] = parse(&body.as_str());
     }
     else
     {
-
         println!("\nNo tle provided, running with demo values!!");
-        
-        let tle_str: &str = 
-        "ISS (ZARYA)
-        1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
-        2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537";
-        
-        let tle: TLE = parse(tle_str);
-        let name: String = tle.name.clone();
-        println!("\n{}", tle);
+    }
 
-        if output_path.is_some(){
-            let file_path: String = output_path.unwrap();
+    let is_write: bool;
+    let mut output_path: String = "./".to_string();
+
+    if output_path_option.is_some(){
+        output_path = output_path_option.unwrap();
+        is_write = true;
+    } else {
+        is_write = false
+    }
+
+    for tle in &tles{
+        if verbose {
+            println!("\n{}", tle);
+        }
+
+        if is_write{
+            let name: String = tle.name.clone();  
+            let file_path: String;
+
+            if output_path.contains(".json"){
+                file_path = output_path.clone();
+
+            } else {
+                file_path = format!("{output_path}/{name}.json");
+
+            }
+
             write_json(tle, &file_path);
-            println!("Wrote tle for {} in json format to: {}", name, file_path);
+            
+            if verbose {
+                println!("Wrote tle for {} in json format to: {}", name, file_path);
+            }
         }
     }
 

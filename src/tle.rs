@@ -4,15 +4,13 @@ Parser for TLE
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
 use std::fs::File;
-use std::io::{BufWriter, Write};
-use serde::Serialize;
+use std::io::{BufWriter, Write, Read};
+use serde::{Serialize, Deserialize};
 
 use hifitime::prelude::*;
 // TODO-TD: minimize memory requirements where possible
-// TODO-TD: read from json file
 
-
-#[derive(Clone, Debug, Serialize)] 
+#[derive(Clone, Debug, Serialize, Deserialize)] 
 pub struct TLE {
     pub name: String,
     pub catalog_number: String,
@@ -49,11 +47,36 @@ impl From<&str> for TLE {
 /// path_str: `&String`
 ///     Path to write to
 /// 
-pub fn write_json(tle: TLE, path_str: &String){
-    let file = File::create(path_str).unwrap();
-    let mut writer = BufWriter::new(file);
-    serde_json::to_writer(&mut writer, &tle).unwrap();
+pub fn write_json(tle: &TLE, path_str: &String){
+    let file: File = File::create(path_str).unwrap();
+    let mut writer: BufWriter<File> = BufWriter::new(file);
+    serde_json::to_writer(&mut writer, tle).unwrap();
     writer.flush().unwrap();
+}
+
+/// Read TLE struct from JSON formatted file
+///
+/// Inputs
+/// ------
+/// json_str: `&str`
+///     File containing json data
+/// 
+/// Outputs
+/// -------
+/// tle_values: `TLE`
+pub fn read_json(
+    json_path: &str
+) -> TLE {
+    let mut file: File = File::open(json_path)
+        .expect(format!("{json_path} could not be openned").as_str());
+
+    let mut data: String = String::new();
+    file.read_to_string(&mut data)
+        .expect(format!("{json_path} could not be read").as_str());
+
+    let tle_values: TLE = serde_json::from_str(&data)
+        .expect("JSON was not well-formatted");
+    return tle_values
 }
 
 /// Display method for `TLE` struct
@@ -63,10 +86,20 @@ impl Display for TLE {
         write!(
             formatter, 
             "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
-            self.name, self.catalog_number, self.international_designator,
-            self.epoch, self.mean_motion, self.mean_motion_1,
-            self.mean_motion_2, self.radiation_pressure, self.inc, self.raan, 
-            self.eccentricity, self.arg_perigee, self.mean_anomaly, self.rev_num
+            self.name, 
+            self.catalog_number, 
+            self.international_designator,
+            self.epoch, 
+            self.mean_motion, 
+            self.mean_motion_1,
+            self.mean_motion_2, 
+            self.radiation_pressure, 
+            self.inc, 
+            self.raan, 
+            self.eccentricity, 
+            self.arg_perigee, 
+            self.mean_anomaly, 
+            self.rev_num
         )
 
     }
@@ -77,7 +110,7 @@ impl Display for TLE {
 /// 
 /// Inputs
 /// ------
-/// str : `&str` 
+/// tle_str : `&str` 
 ///     NORAD Two Line Element Identification String
 /// 
 /// Outputs
@@ -285,7 +318,6 @@ pub fn parse(
 
     return tle
 }
-
 
 /// Convert day of year, year to month, day
 /// 
