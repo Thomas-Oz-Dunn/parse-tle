@@ -14,18 +14,21 @@ use hifitime::prelude::*;
 pub struct TLE {
     pub name: String,
     pub catalog_number: String,
+    pub classification: String,
     pub international_designator: String,
     pub epoch: Epoch,
     pub mean_motion_1: f64,
     pub mean_motion_2: f64,
     pub radiation_pressure: f64,
+    pub ephemeris_type: u8,
+    pub element_set_number: u64,
     pub inc: f64,
     pub raan: f64,
     pub eccentricity:  f64,
     pub arg_perigee: f64,
     pub mean_anomaly: f64,    
     pub mean_motion: f64,
-    pub rev_num: u32
+    pub rev_num: u32,
 }
 
 /// From method for `TLE` struct
@@ -85,10 +88,12 @@ impl Display for TLE {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> Result { 
         write!(
             formatter, 
-            "{}\nCatalog #: {}\nIntl Desig: {}\nEpoch: {}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
+            "{}\nCatalog #: {}\nClassification: {}\nIntl Desig: {}\nSet #: {}\nEpoch: {}\nMean Motion: {}\nMean Motion prime: {}\nMean Motion prime 2: {}\nRadiation Pressure: {}\nInclination: {}\nRaan: {}\nEccentricity: {}\nArgument of Perigee: {}\nMean Anomaly: {}\nRevolution #: {}", 
             self.name, 
             self.catalog_number, 
+            self.classification,
             self.international_designator,
+            self.element_set_number,
             self.epoch, 
             self.mean_motion, 
             self.mean_motion_1,
@@ -131,12 +136,13 @@ pub fn parse(
     };
 
     // TODO-TD: add checksum
-    let bind1: String = lines[idx_1].trim().to_string();
+    let line_1: String = lines[idx_1].trim().to_string();
     
-    // catalog_number
-    let catalog_number: &str = &bind1[2..=7];
+    let catalog_number: &str = &line_1[2..=6];
     
-    let intnl_desig: &str = &bind1[9..=16];
+    let classification: &str = &line_1[7..=7];
+
+    let intnl_desig: &str = &line_1[9..=16];
 
     // name
     let name: &str;
@@ -146,12 +152,12 @@ pub fn parse(
         name = intnl_desig
     }
 
-    let epoch_str: &str = &bind1[18..=31];
+    let epoch_str: &str = &line_1[18..=31];
 
     let year_endian: i32 = epoch_str[0..=1]
         .to_string()
         .parse::<i32>()
-        .unwrap();
+        .expect("Unable to parse year_endian value at epoch_str[0..=1]");
 
     // epoch_year
     let epoch_year: i32;
@@ -169,19 +175,16 @@ pub fn parse(
     let day_of_year: u32 = epoch_day_full[0]
         .to_string()
         .parse::<u32>()
-        .unwrap();
+        .expect("Unable to parse day_of_year value at epoch_day_full[0]");
 
     let month_day: (u8, u8) = calc_month_day(
         day_of_year, 
         epoch_year as u32
     );
-    
-    let epoch_month: u8 = month_day.0;
-    let epoch_day: u8 = month_day.1;
 
     let percent_of_day: f64 = (".".to_owned() + epoch_day_full[1])
         .parse::<f64>()
-        .unwrap();
+        .expect("Unable to parse percent_of_day value at epoch_day_full[1]");
 
     let hours_dec: f64 = percent_of_day * 24.0;
 
@@ -201,8 +204,8 @@ pub fn parse(
     // hifitime epoch
     let full_epoch: Epoch = Epoch::from_gregorian_hms(
         epoch_year as i32, 
-        epoch_month, 
-        epoch_day, 
+        month_day.0, 
+        month_day.1, 
         hours_whole, 
         minutes_whole, 
         seconds_whole, 
@@ -210,24 +213,26 @@ pub fn parse(
     );
 
     // mean_motion_1
-    let mean_motion_1_sign: f64 = (
-        bind1[33..=33].to_string() + "1"
-    ).trim().parse::<f64>().unwrap();
-    let mean_motion_1_base: f64 = bind1[34..=42]
+    let mean_motion_1_sign: f64 = (line_1[33..=33].to_string() + "1")
+        .trim()
+        .parse::<f64>()
+        .expect("Unable to parse mean_motion_1_sign value at line_1[33..=33]");
+    
+    let mean_motion_1_base: f64 = line_1[34..=42]
         .to_string()
         .parse::<f64>()
-        .unwrap();
+        .expect("Unable to parse mean_motion_1_base value at line_1[34..=42]");
     let mean_motion_1: f64 = mean_motion_1_base * mean_motion_1_sign;
 
     // mean_motion_2
     let mean_mot_2_sign: f64 = (
-        bind1[44..=44].to_string() +  "1"
+        line_1[44..=44].to_string() +  "1"
     ).trim().parse::<f64>().unwrap();
-    let mean_mot_2_base: f64 = bind1[45..=49]
+    let mean_mot_2_base: f64 = line_1[45..=49]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let mean_mot_2_exp = bind1[50..=51]
+    let mean_mot_2_exp = line_1[50..=51]
         .to_string()
         .parse::<f64>()
         .unwrap();
@@ -236,32 +241,43 @@ pub fn parse(
 
     // radiation_pressure
     let rad_press_sign: f64 = (
-        bind1[53..=53].to_string() +  "1"
+        line_1[53..=53].to_string() +  "1"
     ).trim().parse::<f64>().unwrap();
-    let rad_press_base: f64 = bind1[54..=58]
+    let rad_press_base: f64 = line_1[54..=58]
         .to_string()
         .parse::<f64>()
         .unwrap();
-    let rad_press_exp = bind1[59..=60]
+    let rad_press_exp = line_1[59..=60]
         .to_string()
         .parse::<f64>()
         .unwrap();
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
     let radiation_pressure: f64 = rad_press_sign * rad_press_base * rad_press_pow;
     
+    let ephemeris_type: u8 = line_1[62..=62]
+        .to_string()
+        .parse::<u8>()
+        .expect("Unable to parse ephemeris_type value at line_1[62..=62]");
+
+    let element_set_number: u64 = line_1[64..=67]
+        .to_string()
+        .trim()
+        .parse::<u64>()
+        .expect("Unable to parse element_set_number value at line_1[64..=67]");
+
     // TODO-TD: add checksum
-    let bind2: String = lines[idx_2].trim().to_string();
+    let line2: String = lines[idx_2].trim().to_string();
 
     // --- Angles
     // inc
-    let inc: f64 = bind2[8..=15]
+    let inc: f64 = line2[8..=15]
         .to_string()
         .trim()
         .parse::<f64>()
         .unwrap(); 
     
     // raan
-    let raan: f64 = bind2[17..=24]
+    let raan: f64 = line2[17..=24]
         .to_string()
         .trim()
         .parse::<f64>()
@@ -269,31 +285,31 @@ pub fn parse(
     
     // eccentricity
     let eccentricity: f64 = (
-        ".".to_owned() + &bind2[26..=32]
+        ".".to_owned() + &line2[26..=32]
     ).parse::<f64>().unwrap();
 
     // arg_perigee
-    let arg_perigee: f64 = bind2[34..=41]
+    let arg_perigee: f64 = line2[34..=41]
         .to_string()
         .trim()
         .parse::<f64>()
         .unwrap();
 
     // mean_anomaly
-    let mean_anomaly: f64 = bind2[44..=50]
+    let mean_anomaly: f64 = line2[44..=50]
         .to_string()
         .parse::<f64>()
         .unwrap();
 
     // mean_motion
-    let mean_motion: f64 = bind2[52..=62]
+    let mean_motion: f64 = line2[52..=62]
         .to_string()
         .trim()
         .parse::<f64>()
         .unwrap();
 
     // rev_num
-    let rev_num: u32 = bind2[64..=68]
+    let rev_num: u32 = line2[64..=68]
         .to_string()
         .trim()
         .parse::<u32>()
@@ -302,18 +318,21 @@ pub fn parse(
     let tle: TLE = TLE { 
         name: name.trim().to_string(),
         catalog_number: catalog_number.trim().to_string(),
+        classification: classification.trim().to_string(),
         international_designator: intnl_desig.trim().to_string(),
         epoch: full_epoch,
         mean_motion_1: mean_motion_1,
         mean_motion_2: mean_motion_2,
         radiation_pressure: radiation_pressure,
+        ephemeris_type: ephemeris_type,
+        element_set_number: element_set_number,
         inc: inc,
         raan: raan,
         eccentricity:  eccentricity,
         arg_perigee: arg_perigee,
         mean_anomaly: mean_anomaly,
         mean_motion: mean_motion,
-        rev_num: rev_num
+        rev_num: rev_num,
     };
 
     return tle

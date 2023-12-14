@@ -1,6 +1,7 @@
 {
     "name":"ISS (ZARYA)",
-    "catalog_number":"25544U",
+    "catalog_number":"25544",
+    "classification": "U",
     "international_designator":"98067A",
     "epoch":{
         "duration_since_j1900_tai":{
@@ -12,6 +13,8 @@
     "mean_motion_1":-0.00002182,
     "mean_motion_2":0.0,
     "radiation_pressure":-1.1606,
+    "ephemeris_type":0,
+    "element_set_number":292,
     "inc":51.6416,
     "raan":247.4627,
     "eccentricity":0.0006703,
