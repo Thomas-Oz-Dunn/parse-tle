@@ -21,10 +21,18 @@ parse-tle = "0.1.3"
 
 ## Usage
 
-API
+Example
 
 ```rust
+use parse_tle::tle::*;
+let sample_tle: &str = 
+"CHANDRAYAAN-3      
+1 57320U 23098A   23208.62000000  .00000392  00000+0  00000+0 0  9994
+2 57320  21.3360   6.1160 9054012 182.9630  18.4770  0.46841359   195";
 
+let chandrayaan_3: TLE = parse(sample_tle);
+let String file_path = format!("{chandrayaan_3.name}_tle.json")
+write_json(chandrayaan_3, &file_path);
 ```
 
 CLI
