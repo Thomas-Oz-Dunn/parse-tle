@@ -1,7 +1,7 @@
-name: Rust
+name: Release
 
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
 
 env:
@@ -18,4 +18,5 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-      
+    - name: Update cargo
+      run: cargo publish
