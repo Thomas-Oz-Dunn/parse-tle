@@ -25,6 +25,10 @@ API
 
 ```rust
 
+use parse_tle::tle::*;
+
+let tle: TLE = parse(tle_string);
+println!("\n{}", tle);
 ```
 
 CLI
@@ -67,6 +71,7 @@ To run an example of reading from file:
 
 ```bash
 ./target/release/parse_tle.exe -f ./examples/starlink_1007_tle.txt
+
 STARLINK-1007
 Catalog #: 44713U
 Intl Desig: 19074A
