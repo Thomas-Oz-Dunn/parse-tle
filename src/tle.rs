@@ -125,9 +125,9 @@ pub fn parse(tle_str: &str) -> TLE {
         _ => panic!("Invalid number of lines"),
     };
 
-    // TODO-TD: add checksum
     let line_1: String = lines[idx_1].trim().to_string();
-
+    run_line_checksum(&line_1);
+    
     let catalog_number: &str = &line_1[2..=6];
 
     let classification: &str = &line_1[7..=7];
@@ -239,8 +239,8 @@ pub fn parse(tle_str: &str) -> TLE {
         .parse::<u64>()
         .expect("Unable to parse element_set_number value at line_1[64..=67]");
 
-    // TODO-TD: add checksum
     let line2: String = lines[idx_2].trim().to_string();
+    run_line_checksum(&line2);
 
     // --- Angles
     // inc
@@ -285,6 +285,40 @@ pub fn parse(tle_str: &str) -> TLE {
     };
 
     return tle;
+}
+
+/// Run checksum on TLE line
+///   
+pub fn run_line_checksum(line: &String) {
+    let mut checksum: u32 = 0;
+    for i in line.chars(){
+        if i == '-'{
+            checksum += 1;
+        }
+        else if i != ' ' && i.is_numeric(){
+            print!("{}\t", i.to_string());
+            checksum += i
+                .to_string()
+                .parse::<u32>()
+                .expect(format!("Unable to parse {} as u32", i).as_str());
+        
+            print!("{}\n\n", checksum.to_string());
+        }
+    }
+    let tle_checksum: u32 = line[68..=68]
+        .to_string()
+        .parse::<u32>()
+        .expect("Unable to parse checksum value");
+
+    // NOTE: Need to subtract the final due to iteration over entire line
+    let mod_10: u32 = (checksum - tle_checksum) % 10;
+    
+    assert!(
+        mod_10 == tle_checksum,  
+        "calculated = {}, tle value = {}", 
+        mod_10, 
+        tle_checksum
+    );
 }
 
 /// Convert day of year, year to month, day
