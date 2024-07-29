@@ -8,7 +8,6 @@ use std::fs::File;
 use std::io::{BufWriter, Read, Write};
 
 use hifitime::prelude::*;
-// TODO-TD: minimize memory requirements where possible
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TLE {
@@ -126,8 +125,8 @@ pub fn parse(tle_str: &str) -> TLE {
     };
 
     let line_1: String = lines[idx_1].trim().to_string();
-    run_line_checksum(&line_1);
-    
+    validate_checksum(&line_1);
+
     let catalog_number: &str = &line_1[2..=6];
 
     let classification: &str = &line_1[7..=7];
@@ -240,7 +239,7 @@ pub fn parse(tle_str: &str) -> TLE {
         .expect("Unable to parse element_set_number value at line_1[64..=67]");
 
     let line2: String = lines[idx_2].trim().to_string();
-    run_line_checksum(&line2);
+    validate_checksum(&line2);
 
     // --- Angles
     // inc
@@ -289,18 +288,22 @@ pub fn parse(tle_str: &str) -> TLE {
 
 /// Run checksum on TLE line
 ///   
-pub fn run_line_checksum(line: &String) {
+/// Inputs
+/// ------
+/// line: `&String`
+///     Line to checksum
+pub fn validate_checksum(line: &String){
     let mut checksum: u32 = 0;
-    for i in line.chars(){
-        if i == '-'{
+    for i_char in line.chars(){
+        if i_char == '-'{
             checksum += 1;
         }
-        else if i != ' ' && i.is_numeric(){
-            print!("{}\t", i.to_string());
-            checksum += i
+        else if i_char != ' ' && i_char.is_numeric(){
+            print!("{}\t", i_char.to_string());
+            checksum += i_char
                 .to_string()
                 .parse::<u32>()
-                .expect(format!("Unable to parse {} as u32", i).as_str());
+                .expect(format!("Unable to parse {} as u32", i_char).as_str());
         
             print!("{}\n\n", checksum.to_string());
         }
