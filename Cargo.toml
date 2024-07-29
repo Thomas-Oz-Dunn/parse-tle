@@ -1,6 +1,6 @@
 [package]
 name = "parse-tle"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description = "Parse two line element set"
 license = "MIT"
@@ -18,4 +18,3 @@ reqwest = { version = "0.11.22", features = ["blocking"] }
 [[bin]]
 name = "parse_tle"
 path = "src/main.rs"
-
