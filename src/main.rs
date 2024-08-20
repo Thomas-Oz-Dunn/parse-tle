@@ -5,7 +5,6 @@ Executable for TLE interefacing
 use clap::{Args, Parser, Subcommand};
 use error_chain::error_chain;
 use std::fs;
-use std::io::Read;
 
 use parse_tle::tle::*;
 
@@ -112,32 +111,13 @@ fn main() {
         }
     } else if command_option.is_some() {
         // TODO-TD: replace elifs with match
-        let mut url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned();
 
         let (query, value) = match command_option.unwrap() {
             Commands::Celestrak(celestrak_args) => (celestrak_args.query, celestrak_args.name),
         };
 
-        url.push_str(query.as_str());
-        url.push_str("=");
-        url.push_str(value.as_str());
-
-        if verbose {
-            println!("\n Site url: {}", url);
-        }
-
-        let mut res = reqwest::blocking::get(url).unwrap();
-        let mut body = String::new();
-        res.read_to_string(&mut body)
-            .expect("Unable to read request");
-
-        if verbose {
-            println!("\n Site Status: {}", res.status());
-            println!("\n Site Headers:\n{:#?}", res.headers());
-            println!("\n Site Body:\n{}", body);
-        }
-
-        tles.append(&mut vec![parse(&body.as_str())]);
+        tles.push(query_celestrak(&query, &value, verbose));
+    
     } else {
         println!("\nNo tle provided!\n\nUse the '-h' flag for help");
     }

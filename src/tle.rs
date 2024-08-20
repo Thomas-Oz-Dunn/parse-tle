@@ -386,6 +386,24 @@ fn check_if_leap_year(year: u32) -> bool {
     return is_leap_year;
 }
 
+/// Query celestrak.org api for TLE
+pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> TLE {
+    let url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned() + query + "=" + value;
+    let mut response = reqwest::blocking::get(url).unwrap();
+    let mut body = String::new();
+    response.read_to_string(&mut body)
+        .expect("Unable to read request");
+
+    if verbose {
+        println!("\n Site Status: {}", response.status());
+        println!("\n Site Headers:\n{:#?}", response.headers());
+        println!("\n Site Body:\n{}", body);
+    }
+
+    return parse(&body.as_str())
+}
+
+
 #[cfg(test)]
 mod tle_tests {
     use super::*;
