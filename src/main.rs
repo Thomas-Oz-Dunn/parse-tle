@@ -47,16 +47,16 @@ enum Commands {
 #[derive(Args)]
 struct CelestrakArgs {
     /// Query type
-    /// ---
-    /// CATNR: Catalog Number (1 to 9 digits). Allows return of data for a single catalog number.
+    /// 
+    /// - CATNR: Catalog Number (1 to 9 digits). Allows return of data for a single catalog number.
     ///
-    /// INTDES: International Designator (yyyy-nnn). Allows return of data for all objects associated with a particular launch.
+    /// - INTDES: International Designator (yyyy-nnn). Allows return of data for all objects associated with a particular launch.
     ///
-    /// GROUP: Groups of satellites provided on the CelesTrak Current Data page.
+    /// - GROUP: Groups of satellites provided on the CelesTrak Current Data page.
     ///
-    /// NAME: Satellite Name. Allows searching for satellites by parts of their name.
+    /// - NAME: Satellite Name. Allows searching for satellites by parts of their name.
     ///
-    /// SPECIAL: Special data sets for the GEO Protected Zone (GPZ) or GPZ Plus.
+    /// - SPECIAL: Special data sets for the GEO Protected Zone (GPZ) or GPZ Plus.
     ///
     query: String,
 
