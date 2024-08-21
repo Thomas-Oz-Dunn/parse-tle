@@ -241,6 +241,7 @@ pub fn parse(tle_str: &str) -> TLE {
     let line2: String = lines[idx_2].trim().to_string();
     validate_checksum(&line2);
 
+    // TODO-TD: turn all unwraps into expects
     // --- Angles
     // inc
     let inc: f64 = line2[8..=15].to_string().trim().parse::<f64>().unwrap();
@@ -299,13 +300,11 @@ pub fn validate_checksum(line: &String){
             checksum += 1;
         }
         else if i_char != ' ' && i_char.is_numeric(){
-            print!("{}\t", i_char.to_string());
             checksum += i_char
                 .to_string()
                 .parse::<u32>()
                 .expect(format!("Unable to parse {} as u32", i_char).as_str());
-        
-            print!("{}\n\n", checksum.to_string());
+    
         }
     }
     let tle_checksum: u32 = line[68..=68]
@@ -388,6 +387,9 @@ fn check_if_leap_year(year: u32) -> bool {
 
 /// Query celestrak.org api for TLE
 pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> TLE {
+    // TODO-TD: add support for handling multiple results
+    // TODO-TD: if query is CATNR, check digit count
+    // TODO-TD: if query is GROUP, handle multi result
     let url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned() + query + "=" + value;
     let mut response = reqwest::blocking::get(url).unwrap();
     let mut body = String::new();

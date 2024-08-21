@@ -133,9 +133,7 @@ fn main() {
     }
 
     for tle in &tles {
-        if verbose {
-            println!("\n{}", tle);
-        }
+        println!("\n{}", tle);
 
         if is_write {
             let name: String = tle.name.clone();
