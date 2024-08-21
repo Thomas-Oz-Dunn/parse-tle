@@ -4,12 +4,12 @@ Parser for TLE
 use serde::{Deserialize, Serialize};
 use std::convert::From;
 use std::fmt::{Display, Formatter, Result};
-use std::fs::File;
+use std::fs;
 use std::io::{BufWriter, Read, Write};
 
 use hifitime::prelude::*;
 
-// TODO-TD: functionalize .txt read, add .txt write
+// TODO-TD: add .txt write
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TLE {
     pub name: String,
@@ -50,11 +50,22 @@ impl From<&str> for TLE {
 ///     Path to write to
 ///
 pub fn write_json(tle: &TLE, path_str: &String) {
-    let file: File = File::create(path_str).unwrap();
-    let mut writer: BufWriter<File> = BufWriter::new(file);
+    let file: fs::File = fs::File::create(path_str).unwrap();
+    let mut writer: BufWriter<fs::File> = BufWriter::new(file);
     serde_json::to_writer(&mut writer, tle).unwrap();
     writer.flush().unwrap();
 }
+
+pub fn tles_from_file(path: &str) -> Vec<TLE> {
+    let tles: Vec<TLE>;
+    if path.contains(".json") {
+        tles = vec![read_json(path)];
+    } else {
+        tles = read_txt(path);
+    }
+    return tles
+}
+
 
 /// Read TLE struct from JSON formatted file
 ///
@@ -67,13 +78,14 @@ pub fn write_json(tle: &TLE, path_str: &String) {
 /// -------
 /// tle_values: `TLE`
 pub fn read_json(json_path: &str) -> TLE {
-    let mut file: File =
-        File::open(json_path).expect(format!("{json_path} could not be openned").as_str());
+    let mut file: fs::File =
+        fs::File::open(json_path).expect(format!("{json_path} could not be openned").as_str());
 
     let mut data: String = String::new();
     file.read_to_string(&mut data)
         .expect(format!("{json_path} could not be read").as_str());
 
+    // TODO-TD: check for multiple TLEs in json
     let tle_values: TLE = serde_json::from_str(&data).expect("JSON was not well-formatted");
     return tle_values;
 }
@@ -294,18 +306,16 @@ pub fn parse(tle_str: &str) -> TLE {
 /// ------
 /// line: `&String`
 ///     Line to checksum
-pub fn validate_checksum(line: &String){
+pub fn validate_checksum(line: &String) {
     let mut checksum: u32 = 0;
-    for i_char in line.chars(){
-        if i_char == '-'{
+    for i_char in line.chars() {
+        if i_char == '-' {
             checksum += 1;
-        }
-        else if i_char != ' ' && i_char.is_numeric(){
+        } else if i_char != ' ' && i_char.is_numeric() {
             checksum += i_char
                 .to_string()
                 .parse::<u32>()
                 .expect(format!("Unable to parse {} as u32", i_char).as_str());
-    
         }
     }
     let tle_checksum: u32 = line[68..=68]
@@ -315,11 +325,11 @@ pub fn validate_checksum(line: &String){
 
     // NOTE: Need to subtract the final due to iteration over entire line
     let mod_10: u32 = (checksum - tle_checksum) % 10;
-    
+
     assert!(
-        mod_10 == tle_checksum,  
-        "calculated = {}, tle value = {}", 
-        mod_10, 
+        mod_10 == tle_checksum,
+        "calculated = {}, tle value = {}",
+        mod_10,
         tle_checksum
     );
 }
@@ -387,14 +397,18 @@ fn check_if_leap_year(year: u32) -> bool {
 }
 
 /// Query celestrak.org api for TLE
-pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> TLE {
-    // TODO-TD: add support for handling multiple results
+pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> Vec<TLE> {
     // TODO-TD: if query is CATNR, check digit count
-    // TODO-TD: if query is GROUP, handle multi result
-    let url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned() + query + "=" + value;
+    let url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned()
+        + query
+        + "="
+        + value
+        + "&FORMAT=tle";
+
     let mut response = reqwest::blocking::get(url).unwrap();
     let mut body = String::new();
-    response.read_to_string(&mut body)
+    response
+        .read_to_string(&mut body)
         .expect("Unable to read request");
 
     if verbose {
@@ -403,7 +417,32 @@ pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> TLE {
         println!("\n Site Body:\n{}", body);
     }
 
-    return parse(&body.as_str())
+    return read_multi_tle(&body.as_str());
+}
+
+/// Parse raw .txt file 
+pub fn read_txt(path: &str) -> Vec<TLE> {
+    let contents: String = fs::read_to_string(path)
+        .expect(format!("Unable to read file:\n{}", path).as_str());
+
+    return read_multi_tle(contents.as_str());
+}
+
+/// Sometimes string bodies will hold multiple TLEs, sometimes singular
+pub fn read_multi_tle(contents: &str) -> Vec<TLE> {
+    let mut tles: Vec<TLE> = vec![];
+    let lines: Vec<&str> = contents.lines().collect();
+    // TODO-TD: check the format of the file more closely
+    for i_tle in 0..(lines.len() / 3) {
+        let idx: usize = 3 * i_tle;
+        let line1: &str = lines[idx];
+        let line2: &str = lines[idx + 1];
+        let line3: &str = lines[idx + 2];
+
+        let together: String = format!("{line1}\n{line2}\n{line3}\n");
+        tles.append(&mut vec![parse(&together.as_str())]);
+    }
+    return tles;
 }
 
 

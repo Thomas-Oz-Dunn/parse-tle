@@ -4,7 +4,6 @@ Executable for TLE interefacing
 */
 use clap::{Args, Parser, Subcommand};
 use error_chain::error_chain;
-use std::fs;
 
 use parse_tle::tle::*;
 
@@ -72,43 +71,12 @@ fn main() {
     let output_path_option: Option<String> = cli.output_path;
     let command_option: Option<Commands> = cli.command;
 
-    let mut tles: Vec<TLE> = vec![];
+    let tles: Vec<TLE>;
 
     if tle_string_option.is_some() {
-        tles.append(&mut vec![parse(tle_string_option.unwrap().as_str())]);
+        tles = vec![parse(tle_string_option.unwrap().as_str())];
     } else if file_path_option.is_some() {
-        let file: String = file_path_option.unwrap();
-
-        if file.contains(".json") {
-            tles.append(&mut vec![read_json(&file.as_str())]);
-        } else {
-            let contents: String = fs::read_to_string(file.as_str())
-                .expect(format!("Unable to read file:\n{}", file).as_str());
-
-            if verbose {
-                println!("File contents:\n{}", contents);
-            }
-
-            let lines: Vec<&str> = contents.lines().collect();
-            let n_lines: usize = lines.len();
-            if n_lines <= 3 {
-                tles.append(&mut vec![parse(&contents.as_str())]);
-            } else {
-                // MultiTLE file
-                let n_tles: usize = n_lines / 3;
-                let file_str: &str = &contents.as_str();
-                let tle_lines: Vec<&str> = file_str.lines().collect();
-
-                for i_tle in 0..n_tles {
-                    let line1: &str = tle_lines[3 * i_tle];
-                    let line2: &str = tle_lines[3 * i_tle + 1];
-                    let line3: &str = tle_lines[3 * i_tle + 2];
-
-                    let together: String = format!("{line1}\n{line2}\n{line3}\n");
-                    tles.append(&mut vec![parse(&together.as_str())]);
-                }
-            };
-        }
+        tles = tles_from_file(&file_path_option.unwrap().as_str());
     } else if command_option.is_some() {
         // TODO-TD: replace elifs with match
 
@@ -116,10 +84,11 @@ fn main() {
             Commands::Celestrak(celestrak_args) => (celestrak_args.query, celestrak_args.value),
         };
 
-        tles.push(query_celestrak(&query, &value, verbose));
+        tles = query_celestrak(&query, &value, verbose);
     
     } else {
         println!("\nNo tle provided!\n\nUse the '-h' flag for help");
+        return;
     }
 
     let is_write: bool;
