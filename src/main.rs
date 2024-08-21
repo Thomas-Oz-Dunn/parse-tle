@@ -60,8 +60,8 @@ struct CelestrakArgs {
     ///
     query: String,
 
-    /// Object name
-    name: String,
+    /// Object value
+    value: String,
 }
 
 fn main() {
@@ -113,7 +113,7 @@ fn main() {
         // TODO-TD: replace elifs with match
 
         let (query, value) = match command_option.unwrap() {
-            Commands::Celestrak(celestrak_args) => (celestrak_args.query, celestrak_args.name),
+            Commands::Celestrak(celestrak_args) => (celestrak_args.query, celestrak_args.value),
         };
 
         tles.push(query_celestrak(&query, &value, verbose));

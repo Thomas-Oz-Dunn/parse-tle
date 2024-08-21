@@ -50,7 +50,7 @@ Which generates the help page:
 ```bash
 Parse two line element set
 
-Usage: parse_tle.exe [OPTIONS] [TWO_LINE_ELEMENT] [COMMAND]
+Usage: parse_tle [OPTIONS] [TWO_LINE_ELEMENT] [COMMAND]
 
 Commands:
   celestrak  Query celestrak for tles
@@ -61,7 +61,7 @@ Arguments:
 
 Options:
   -v, --verbose                    Verbose printing
-  -f, --file-path <FILE_PATH>      path to .txt file holding tle information
+  -f, --file-path <FILE_PATH>      Path to file holding tle information
   -o, --output-path <OUTPUT_PATH>  Path to write json formatted output
   -h, --help                       Print help
   -V, --version                    Print version
@@ -86,4 +86,9 @@ Eccentricity: 0.0001422
 Argument of Perigee: 105.9473
 Mean Anomaly: 54.1673
 Revolution #: 24322
+```
+
+Query celestrak for the ISS:
+```bash
+./target/release/parse_tle celestrak CATNR 25544
 ```

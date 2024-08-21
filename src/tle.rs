@@ -9,6 +9,7 @@ use std::io::{BufWriter, Read, Write};
 
 use hifitime::prelude::*;
 
+// TODO-TD: functionalize .txt read, add .txt write
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TLE {
     pub name: String,
