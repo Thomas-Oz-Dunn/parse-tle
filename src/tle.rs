@@ -50,20 +50,19 @@ impl From<&str> for TLE {
 ///     Path to write to
 ///
 pub fn write_json(tle: &TLE, path_str: &String) {
-    let file: fs::File = fs::File::create(path_str).unwrap();
+    let file: fs::File = fs::File::create(path_str).expect("Unable to create file");
     let mut writer: BufWriter<fs::File> = BufWriter::new(file);
     serde_json::to_writer(&mut writer, tle).unwrap();
     writer.flush().unwrap();
 }
 
+/// Read TLEs from a file path 
 pub fn tles_from_file(path: &str) -> Vec<TLE> {
-    let tles: Vec<TLE>;
     if path.contains(".json") {
-        tles = vec![read_json(path)];
+        return vec![read_json(path)];
     } else {
-        tles = read_txt(path);
+        return read_txt(path);
     }
-    return tles
 }
 
 
@@ -224,7 +223,7 @@ pub fn parse(tle_str: &str) -> TLE {
     let mean_mot_2_sign: f64 = (line_1[44..=44].to_string() + "1")
         .trim()
         .parse::<f64>()
-        .unwrap();
+        .expect("Invalid mean motion 2 sign");
     let mean_mot_2_base: f64 = line_1[45..=49].to_string().parse::<f64>().unwrap();
     let mean_mot_2_exp = line_1[50..=51].to_string().parse::<f64>().unwrap();
     let mean_mot_2_pow: f64 = 10_f64.powf(mean_mot_2_exp);
@@ -234,7 +233,7 @@ pub fn parse(tle_str: &str) -> TLE {
     let rad_press_sign: f64 = (line_1[53..=53].to_string() + "1")
         .trim()
         .parse::<f64>()
-        .unwrap();
+        .expect("Invalid radiation pressure sign");
     let rad_press_base: f64 = line_1[54..=58].to_string().parse::<f64>().unwrap();
     let rad_press_exp = line_1[59..=60].to_string().parse::<f64>().unwrap();
     let rad_press_pow: f64 = 10_f64.powf(rad_press_exp);
@@ -254,28 +253,27 @@ pub fn parse(tle_str: &str) -> TLE {
     let line2: String = lines[idx_2].trim().to_string();
     validate_checksum(&line2);
 
-    // TODO-TD: turn all unwraps into expects
-    // --- Angles
+    // --- Keplerian Parameters
     // inc
-    let inc: f64 = line2[8..=15].to_string().trim().parse::<f64>().unwrap();
+    let inc: f64 = line2[8..=15].to_string().trim().parse::<f64>().expect("Invalid inclination angle");
 
     // raan
-    let raan: f64 = line2[17..=24].to_string().trim().parse::<f64>().unwrap();
+    let raan: f64 = line2[17..=24].to_string().trim().parse::<f64>().expect("Invalid right angle of ascending node");
 
     // eccentricity
-    let eccentricity: f64 = (".".to_owned() + &line2[26..=32]).parse::<f64>().unwrap();
+    let eccentricity: f64 = (".".to_owned() + &line2[26..=32]).parse::<f64>().expect("Invalid eccenticity");
 
     // arg_perigee
-    let arg_perigee: f64 = line2[34..=41].to_string().trim().parse::<f64>().unwrap();
+    let arg_perigee: f64 = line2[34..=41].to_string().trim().parse::<f64>().expect("Invalid argument of perigee");
 
     // mean_anomaly
-    let mean_anomaly: f64 = line2[44..=50].to_string().parse::<f64>().unwrap();
+    let mean_anomaly: f64 = line2[44..=50].to_string().parse::<f64>().expect("Invalid mean anomaly");
 
     // mean_motion
-    let mean_motion: f64 = line2[52..=62].to_string().trim().parse::<f64>().unwrap();
+    let mean_motion: f64 = line2[52..=62].to_string().trim().parse::<f64>().expect("Invalid mean motion");
 
     // rev_num
-    let rev_num: u32 = line2[64..=68].to_string().trim().parse::<u32>().unwrap();
+    let rev_num: u32 = line2[64..=68].to_string().trim().parse::<u32>().expect("Invalid revolution number");
 
     let tle: TLE = TLE {
         name: name.trim().to_string(),
@@ -398,14 +396,13 @@ fn check_if_leap_year(year: u32) -> bool {
 
 /// Query celestrak.org api for TLE
 pub fn query_celestrak(query: &str, value: &str, verbose: bool) -> Vec<TLE> {
-    // TODO-TD: if query is CATNR, check digit count
     let url: String = "https://celestrak.org/NORAD/elements/gp.php?".to_owned()
         + query
         + "="
         + value
         + "&FORMAT=tle";
 
-    let mut response = reqwest::blocking::get(url).unwrap();
+    let mut response = reqwest::blocking::get(url).expect("Expected response");
     let mut body = String::new();
     response
         .read_to_string(&mut body)
@@ -428,7 +425,7 @@ pub fn read_txt(path: &str) -> Vec<TLE> {
     return read_multi_tle(contents.as_str());
 }
 
-/// Sometimes string bodies will hold multiple TLEs, sometimes singular
+/// Sometimes string bodies will hold multiple TLEs, it's good to be adaptive
 pub fn read_multi_tle(contents: &str) -> Vec<TLE> {
     let mut tles: Vec<TLE> = vec![];
     let lines: Vec<&str> = contents.lines().collect();

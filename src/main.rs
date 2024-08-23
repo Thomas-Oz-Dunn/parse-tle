@@ -78,14 +78,10 @@ fn main() {
     } else if file_path_option.is_some() {
         tles = tles_from_file(&file_path_option.unwrap().as_str());
     } else if command_option.is_some() {
-        // TODO-TD: replace elifs with match
-
         let (query, value) = match command_option.unwrap() {
             Commands::Celestrak(celestrak_args) => (celestrak_args.query, celestrak_args.value),
         };
-
         tles = query_celestrak(&query, &value, verbose);
-    
     } else {
         println!("\nNo tle provided!\n\nUse the '-h' flag for help");
         return;
@@ -95,7 +91,7 @@ fn main() {
     let mut output_path: String = "./".to_string();
 
     if output_path_option.is_some() {
-        output_path = output_path_option.expect("Expected output path");
+        output_path = output_path_option.expect("Expected valid output path");
         is_write = true;
     } else {
         is_write = false
