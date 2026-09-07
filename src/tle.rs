@@ -56,6 +56,40 @@ pub fn write_json(tle: &TLE, path_str: &String) {
     writer.flush().unwrap();
 }
 
+
+// Write .txt file in TLE format
+pub fn write_txt(tle: &TLE, path_str: &String) {
+    let file: fs::File = fs::File::create(path_str).expect("Unable to create file");
+    let mut writer: BufWriter<fs::File> = BufWriter::new(file);
+
+    // Allocate 80 characeters
+    // let mut line_1 &str (80)
+
+    // line_1[2..=6] = catalog_number;
+    // line_1[7..=7] = classification;
+    // line_1[9..=16] = intnl_desig;
+
+
+    // pub name: String,
+    // pub catalog_number: String,
+    // pub classification: String,
+    // pub international_designator: String,
+    // pub epoch: Epoch,
+    // pub mean_motion_1: f64,
+    // pub mean_motion_2: f64,
+    // pub radiation_pressure: f64,
+    // pub ephemeris_type: u8,
+    // pub element_set_number: u64,
+    // pub inc: f64,
+    // pub raan: f64,
+    // pub eccentricity: f64,
+    // pub arg_perigee: f64,
+    // pub mean_anomaly: f64,
+    // pub mean_motion: f64,
+    // pub rev_num: u32,
+    writer.flush().unwrap();
+}
+
 /// Read TLEs from a file path 
 pub fn tles_from_file(path: &str) -> Vec<TLE> {
     if path.contains(".json") {
