@@ -9,7 +9,6 @@ use std::io::{BufWriter, Read, Write};
 
 use hifitime::prelude::*;
 
-// TODO-TD: add .txt write
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TLE {
     pub name: String,
@@ -53,40 +52,6 @@ pub fn write_json(tle: &TLE, path_str: &String) {
     let file: fs::File = fs::File::create(path_str).expect("Unable to create file");
     let mut writer: BufWriter<fs::File> = BufWriter::new(file);
     serde_json::to_writer(&mut writer, tle).unwrap();
-    writer.flush().unwrap();
-}
-
-
-// Write .txt file in TLE format
-pub fn write_txt(tle: &TLE, path_str: &String) {
-    let file: fs::File = fs::File::create(path_str).expect("Unable to create file");
-    let mut writer: BufWriter<fs::File> = BufWriter::new(file);
-
-    // Allocate 80 characeters
-    // let mut line_1 &str (80)
-
-    // line_1[2..=6] = catalog_number;
-    // line_1[7..=7] = classification;
-    // line_1[9..=16] = intnl_desig;
-
-
-    // pub name: String,
-    // pub catalog_number: String,
-    // pub classification: String,
-    // pub international_designator: String,
-    // pub epoch: Epoch,
-    // pub mean_motion_1: f64,
-    // pub mean_motion_2: f64,
-    // pub radiation_pressure: f64,
-    // pub ephemeris_type: u8,
-    // pub element_set_number: u64,
-    // pub inc: f64,
-    // pub raan: f64,
-    // pub eccentricity: f64,
-    // pub arg_perigee: f64,
-    // pub mean_anomaly: f64,
-    // pub mean_motion: f64,
-    // pub rev_num: u32,
     writer.flush().unwrap();
 }
 
@@ -386,13 +351,7 @@ pub fn validate_checksum(line: &String) {
 pub fn calc_month_day(day_of_year: u32, year: u32) -> (u8, u8) {
     assert!(day_of_year < 366, "Day of year must be less than 366");
 
-    let feb_days: u32;
-    if check_if_leap_year(year) {
-        feb_days = 29;
-    } else {
-        feb_days = 28;
-    }
-
+    let feb_days: u32 = if check_if_leap_year(year) { 29 } else { 28 };
     let month_lengths: Vec<u32> = vec![31, feb_days, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     let mut month: u8 = 1;
@@ -407,6 +366,13 @@ pub fn calc_month_day(day_of_year: u32, year: u32) -> (u8, u8) {
     let day: u32 = day_of_year - sum_days;
 
     return (month, day as u8);
+}
+
+/// Month/day -> day of year (1-366)
+fn day_of_year(month: u8, day: u8, year: u32) -> u32 {
+    let feb_days: u32 = if check_if_leap_year(year) { 29 } else { 28 };
+    let lengths: [u32; 12] = [31, feb_days, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    lengths[..(month as usize - 1)].iter().sum::<u32>() + day as u32
 }
 
 /// Check if the year is a leap year
